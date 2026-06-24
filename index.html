@@ -480,23 +480,18 @@ const CLAIMS_RESOURCE    = 'tbry-pc3d';
 const STATE_AVG_RESOURCE = 'wse2-w6yg';
 
 async function cmsQuery(resource, conditions, limit = 100) {
-  const params = conditions.map((c, i) =>
-    `conditions%5B${i}%5D%5Bproperty%5D=${encodeURIComponent(c.property)}` +
-    `&conditions%5B${i}%5D%5Bvalue%5D=${encodeURIComponent(c.value)}` +
-    `&conditions%5B${i}%5D%5Boperator%5D=%3D`
-  ).join('&');
-  const url = `https://data.cms.gov/provider-data/api/1/datastore/query/${resource}/0?${params}&limit=${limit}`;
-
-  // Try direct first (works locally), fall back to corsproxy (needed on GitHub Pages)
-  try {
-    const r = await fetch(url);
-    if (r.ok) return r.json();
-  } catch(e) {}
-
+  const p = new URLSearchParams();
+  conditions.forEach((c, i) => {
+    p.append(`conditions[${i}][property]`, c.property);
+    p.append(`conditions[${i}][value]`, c.value);
+    p.append(`conditions[${i}][operator]`, '=');
+  });
+  p.append('limit', limit);
+  const url = `https://data.cms.gov/provider-data/api/1/datastore/query/${resource}/0?${p.toString()}`;
   const proxied = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-  const r2 = await fetch(proxied);
-  if (!r2.ok) throw new Error(`CMS ${r2.status}`);
-  return r2.json();
+  const r = await fetch(proxied);
+  if (!r.ok) throw new Error(`CMS ${r.status}`);
+  return r.json();
 }
 
 // ─── Lookup ───────────────────────────────────────────────────────────────────
