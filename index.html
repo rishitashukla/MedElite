@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medelite — Facility Assessment Report Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0B1F3A;
+    --navy-mid: #163356;
+    --teal: #00A878;
+    --teal-light: #E6F7F3;
+    --teal-mid: #B3E8DA;
+    --gold: #C8962A;
+    --gold-light: #FDF6E8;
+    --red: #D63B3B;
+    --red-light: #FDEAEA;
+    --gray-50: #F7F8FA;
+    --gray-100: #EEF0F4;
+    --gray-200: #D8DCE4;
+    --gray-400: #9AA3B2;
+    --gray-600: #5A6478;
+    --gray-800: #2C3344;
+    --white: #FFFFFF;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --shadow: 0 1px 3px rgba(11,31,58,0.08), 0 4px 16px rgba(11,31,58,0.06);
+    --shadow-sm: 0 1px 2px rgba(11,31,58,0.06);
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  .app-header {
+    background: var(--navy);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo-area { display: flex; align-items: center; gap: 10px; }
+  .logo-mark {
+    width: 32px; height: 32px;
+    background: var(--teal);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px; color: #fff; letter-spacing: -0.5px;
+  }
+  .logo-text { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.3px; }
+  .logo-sub { color: var(--gray-400); font-size: 12px; font-weight: 400; margin-left: 4px; }
+  .header-badge {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--gray-400);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+
+  /* ── Layout ── */
+  .app-body {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .card-header {
+    padding: 1rem 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .card-icon.teal { background: var(--teal-light); color: var(--teal); }
+  .card-icon.navy { background: #E8EDF5; color: var(--navy); }
+  .card-icon.gold { background: var(--gold-light); color: var(--gold); }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--gray-800); }
+  .card-body { padding: 1rem 1.25rem; }
+
+  /* ── Form elements ── */
+  label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+  }
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    font-size: 14px;
+    color: var(--gray-800);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(0,168,120,0.12);
+  }
+  input::placeholder { color: var(--gray-400); }
+  .field { margin-bottom: 0.9rem; }
+  .field:last-child { margin-bottom: 0; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+  /* ── CCN Search ── */
+  .ccn-input-wrap {
+    display: flex;
+    gap: 8px;
+  }
+  .ccn-input-wrap input { flex: 1; font-size: 15px; font-weight: 500; letter-spacing: 1px; }
+  .btn-lookup {
+    padding: 9px 16px;
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, transform 0.1s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-lookup:hover { background: var(--navy-mid); }
+  .btn-lookup:active { transform: scale(0.98); }
+  .btn-lookup:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── Status banner ── */
+  .status-banner {
+    display: none;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 0.75rem;
+    align-items: center;
+    gap: 8px;
+  }
+  .status-banner.loading { display: flex; background: #EEF0F4; color: var(--gray-600); }
+  .status-banner.success { display: flex; background: var(--teal-light); color: #076649; }
+  .status-banner.error   { display: flex; background: var(--red-light); color: var(--red); }
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--gray-200);
+    border-top-color: var(--teal);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Preview panel ── */
+  .preview-panel { position: sticky; top: 76px; }
+
+  /* ── Report preview card ── */
+  .report-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .report-header {
+    background: var(--navy);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .report-header-left .report-tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--teal);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .report-facility-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+  }
+  .report-facility-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    margin-top: 3px;
+  }
+  .report-ccn-badge {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 100px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    white-space: nowrap;
+    font-family: monospace;
+  }
+
+  .report-stars {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--gray-100);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+  .star-item { text-align: center; }
+  .star-value {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .star-label {
+    font-size: 10px;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.3;
+  }
+  .star-1 { color: var(--red); }
+  .star-2 { color: #E07A2A; }
+  .star-3 { color: var(--gold); }
+  .star-4 { color: #6BAA3A; }
+  .star-5 { color: var(--teal); }
+
+  .report-section {
+    padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .report-section:last-child { border-bottom: none; }
+  .report-section-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    color: var(--gray-400);
+    margin-bottom: 0.6rem;
+  }
+  .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 1rem; }
+  .report-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .report-key { font-size: 12px; color: var(--gray-400); flex-shrink: 0; }
+  .report-val { font-size: 12px; font-weight: 600; color: var(--gray-800); text-align: right; }
+  .report-val.above { color: var(--red); }
+  .report-val.below { color: var(--teal); }
+
+  /* ── Hospitalization benchmark bars ── */
+  .bench-group { margin-bottom: 0.7rem; }
+  .bench-label-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+  .bench-label { font-size: 11px; color: var(--gray-600); }
+  .bench-val { font-size: 11px; font-weight: 700; }
+  .bench-bar-wrap { height: 6px; background: var(--gray-100); border-radius: 3px; position: relative; overflow: hidden; }
+  .bench-bar { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+  .bench-markers {
+    display: flex; justify-content: space-between;
+    margin-top: 2px;
+    font-size: 9.5px;
+    color: var(--gray-400);
+  }
+
+  /* ── Placeholder ── */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--gray-400);
+  }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+  .empty-title { font-size: 15px; font-weight: 600; color: var(--gray-600); margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; }
+
+  /* ── Download button ── */
+  .btn-download {
+    width: 100%;
+    padding: 12px;
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background 0.15s, transform 0.1s;
+    letter-spacing: 0.2px;
+    margin-top: 1rem;
+  }
+  .btn-download:hover { background: #009168; }
+  .btn-download:active { transform: scale(0.99); }
+  .btn-download:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .divider { height: 1px; background: var(--gray-100); margin: 0.75rem 0; }
+
+  .section-group { display: flex; flex-direction: column; gap: 1rem; }
+
+  /* ── Medicare link ── */
+  .medicare-link {
+    font-size: 12px;
+    color: var(--teal);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+  }
+  .medicare-link:hover { text-decoration: underline; }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .app-body { grid-template-columns: 1fr; }
+    .preview-panel { position: static; }
+    .report-stars { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo-area">
+    <div class="logo-mark">M</div>
+    <span class="logo-text">Medelite <span class="logo-sub">/ Facility Assessment</span></span>
+  </div>
+  <span class="header-badge">Internal Tool · Directors</span>
+</header>
+
+<main class="app-body">
+
+  <!-- ── LEFT COLUMN: Inputs ── -->
+  <div class="section-group">
+
+    <!-- CCN Lookup -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon teal">⌕</div>
+        <span class="card-title">CMS Provider Lookup</span>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label>CMS Certification Number (CCN)</label>
+          <div class="ccn-input-wrap">
+            <input type="text" id="ccn-input" placeholder="e.g. 105447" maxlength="10">
+            <button class="btn-lookup" id="btn-lookup" onclick="lookupCCN()">
+              <span id="lookup-btn-text">Look up</span>
+            </button>
+          </div>
+          <div class="status-banner" id="status-banner">
+            <div class="spinner" id="spinner"></div>
+            <span id="status-text"></span>
+          </div>
+        </div>
+        <div class="field" id="name-override-wrap" style="display:none;">
+          <label>Facility name override <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--gray-400);">(optional)</span></label>
+          <input type="text" id="name-override" placeholder="Leave blank to use CMS official name">
+        </div>
+      </div>
+    </div>
+
+    <!-- Operational Inputs -->
+    <div class="card" id="ops-card">
+      <div class="card-header">
+        <div class="card-icon navy">≡</div>
+        <span class="card-title">Operational Details</span>
+      </div>
+      <div class="card-body">
+        <div class="field-row">
+          <div class="field">
+            <label>EMR System</label>
+            <input type="text" id="emr" placeholder="e.g. PCC, PointClickCare" oninput="updatePreview()">
+          </div>
+          <div class="field">
+            <label>Census Capacity</label>
+            <input type="number" id="census-cap" placeholder="e.g. 120" oninput="updatePreview()">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Current Census</label>
+            <input type="number" id="census-cur" placeholder="e.g. 112" oninput="updatePreview()">
+          </div>
+          <div class="field">
+            <label>Patient Type</label>
+            <select id="patient-type" onchange="updatePreview()">
+              <option value="">Select...</option>
+              <option>Long-term only</option>
+              <option>Short-term only</option>
+              <option>Long-term &amp; Short-term</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Medical Coverage</label>
+          <input type="text" id="medical-coverage" placeholder="e.g. Optometry, PCP, Podiatry" oninput="updatePreview()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Medelite History -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon gold">◈</div>
+        <span class="card-title">Medelite History</span>
+      </div>
+      <div class="card-body">
+        <div class="field-row">
+          <div class="field">
+            <label>Previous Coverage</label>
+            <select id="prev-coverage" onchange="updatePreview()">
+              <option value="">Select...</option>
+              <option>Yes</option>
+              <option>No</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Prior Performance</label>
+            <input type="text" id="prev-perf" placeholder="e.g. ~30 pts/day" oninput="updatePreview()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Download -->
+    <button class="btn-download" id="btn-download" onclick="downloadPDF()" disabled>
+      ↓ Download PDF Report
+    </button>
+
+  </div>
+
+  <!-- ── RIGHT COLUMN: Live Preview ── -->
+  <div class="preview-panel">
+    <div class="report-card" id="report-card">
+
+      <!-- Empty state -->
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">🏥</div>
+        <div class="empty-title">No facility loaded</div>
+        <div class="empty-sub">Enter a CCN on the left and click "Look up" to pull CMS data and build your report.</div>
+      </div>
+
+      <!-- Report content (hidden until data loaded) -->
+      <div id="report-content" style="display:none;">
+
+        <!-- Report header -->
+        <div class="report-header">
+          <div class="report-header-left">
+            <div class="report-tag">Facility Assessment Snapshot</div>
+            <div class="report-facility-name" id="r-name">—</div>
+            <div class="report-facility-sub" id="r-addr">—</div>
+          </div>
+          <span class="report-ccn-badge" id="r-ccn-badge">CCN —</span>
+        </div>
+
+        <!-- Star ratings -->
+        <div class="report-stars">
+          <div class="star-item">
+            <div class="star-value" id="r-star-overall">—</div>
+            <div class="star-label">Overall</div>
+          </div>
+          <div class="star-item">
+            <div class="star-value" id="r-star-health">—</div>
+            <div class="star-label">Health Insp.</div>
+          </div>
+          <div class="star-item">
+            <div class="star-value" id="r-star-staff">—</div>
+            <div class="star-label">Staffing</div>
+          </div>
+          <div class="star-item">
+            <div class="star-value" id="r-star-qm">—</div>
+            <div class="star-label">Quality Care</div>
+          </div>
+        </div>
+
+        <!-- Facility Info -->
+        <div class="report-section">
+          <div class="report-section-title">Facility Info</div>
+          <div class="report-grid">
+            <div class="report-row"><span class="report-key">Ownership</span><span class="report-val" id="r-ownership">—</span></div>
+            <div class="report-row"><span class="report-key">Certified beds</span><span class="report-val" id="r-beds">—</span></div>
+            <div class="report-row"><span class="report-key">Avg residents/day</span><span class="report-val" id="r-avg-res">—</span></div>
+            <div class="report-row"><span class="report-key">Chain</span><span class="report-val" id="r-chain">—</span></div>
+          </div>
+        </div>
+
+        <!-- Operational -->
+        <div class="report-section" id="r-ops-section">
+          <div class="report-section-title">Operational Details</div>
+          <div class="report-grid">
+            <div class="report-row"><span class="report-key">EMR</span><span class="report-val" id="r-emr">—</span></div>
+            <div class="report-row"><span class="report-key">Census capacity</span><span class="report-val" id="r-cap">—</span></div>
+            <div class="report-row"><span class="report-key">Current census</span><span class="report-val" id="r-cur">—</span></div>
+            <div class="report-row"><span class="report-key">Patient type</span><span class="report-val" id="r-ptype">—</span></div>
+            <div class="report-row"><span class="report-key">Medical coverage</span><span class="report-val" id="r-medcov" style="font-size:11px;">—</span></div>
+          </div>
+        </div>
+
+        <!-- Medelite History -->
+        <div class="report-section">
+          <div class="report-section-title">Medelite History</div>
+          <div class="report-grid">
+            <div class="report-row"><span class="report-key">Prior coverage</span><span class="report-val" id="r-prev-cov">—</span></div>
+            <div class="report-row"><span class="report-key">Prior performance</span><span class="report-val" id="r-prev-perf">—</span></div>
+          </div>
+        </div>
+
+        <!-- Short-Stay Hospitalization -->
+        <div class="report-section">
+          <div class="report-section-title">Short-Stay Hospitalization</div>
+          <div id="r-str-hosp-bars"></div>
+        </div>
+
+        <!-- Short-Stay ED Visits -->
+        <div class="report-section">
+          <div class="report-section-title">Short-Stay ED Visits</div>
+          <div id="r-str-ed-bars"></div>
+        </div>
+
+        <!-- Long-Stay Hospitalization -->
+        <div class="report-section">
+          <div class="report-section-title">Long-Stay Hospitalization (per 1,000 resident days)</div>
+          <div id="r-ls-hosp-bars"></div>
+        </div>
+
+        <!-- Long-Stay ED Visits -->
+        <div class="report-section">
+          <div class="report-section-title">Long-Stay ED Visits (per 1,000 resident days)</div>
+          <div id="r-ls-ed-bars"></div>
+        </div>
+
+        <!-- Medicare source link -->
+        <div class="report-section">
+          <div class="report-section-title">Data Source</div>
+          <a class="medicare-link" id="r-medicare-link" href="#" target="_blank">
+            ↗ View on Medicare Care Compare
+          </a>
+          <div style="font-size:11px;color:var(--gray-400);margin-top:4px;" id="r-processed-date"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ─── State ─────────────────────────────────────────────────────────────────
+let facilityData = null;
+let claimsData = null;
+
+// ─── CCN Lookup ─────────────────────────────────────────────────────────────
+async function lookupCCN() {
+  const raw = document.getElementById('ccn-input').value.trim();
+  if (!raw) { showStatus('error', 'Please enter a CCN.'); return; }
+
+  // Pad CCN to 6 characters with leading zeros
+  const ccn = raw.padStart(6, '0');
+
+  setBtnLoading(true);
+  showStatus('loading', 'Fetching facility data from CMS…');
+  facilityData = null;
+  claimsData = null;
+  document.getElementById('report-content').style.display = 'none';
+  document.getElementById('empty-state').style.display = 'block';
+  document.getElementById('btn-download').disabled = true;
+  document.getElementById('name-override-wrap').style.display = 'none';
+
+  try {
+    // Fetch provider info from CMS Provider Data Catalog
+    const provUrl = `https://data.cms.gov/provider-data/api/1/datastore/query/4pq5-n9py/0?conditions[0][property]=CMS+Certification+Number+%28CCN%29&conditions[0][value]=${encodeURIComponent(ccn)}&conditions[0][operator]=%3D&limit=1`;
+
+    const res = await fetch(provUrl);
+    if (!res.ok) throw new Error(`CMS API error: ${res.status}`);
+    const json = await res.json();
+
+    if (!json.results || json.results.length === 0) {
+      throw new Error(`No facility found for CCN ${ccn}. Verify the number and try again.`);
+    }
+
+    facilityData = json.results[0];
+
+    // Now fetch claims quality measures (for hospitalization/ED data)
+    try {
+      const claimsUrl = `https://data.cms.gov/provider-data/api/1/datastore/query/tbry-pc3d/0?conditions[0][property]=CMS+Certification+Number+%28CCN%29&conditions[0][value]=${encodeURIComponent(ccn)}&conditions[0][operator]=%3D&limit=50`;
+      const claimsRes = await fetch(claimsUrl);
+      if (claimsRes.ok) {
+        const cj = await claimsRes.json();
+        claimsData = cj.results || [];
+      }
+    } catch(e) { claimsData = []; }
+
+    showStatus('success', `Found: ${facilityData['Provider Name'] || facilityData['provider_name'] || 'Facility'}`);
+    document.getElementById('name-override-wrap').style.display = 'block';
+    document.getElementById('name-override').value = '';
+    document.getElementById('name-override').placeholder = getFacilityName(facilityData);
+
+    updatePreview();
+    document.getElementById('btn-download').disabled = false;
+
+  } catch(err) {
+    showStatus('error', err.message || 'Failed to fetch data. Check the CCN and your connection.');
+    setBtnLoading(false);
+  }
+
+  setBtnLoading(false);
+}
+
+function setBtnLoading(loading) {
+  const btn = document.getElementById('btn-lookup');
+  const txt = document.getElementById('lookup-btn-text');
+  btn.disabled = loading;
+  txt.textContent = loading ? 'Loading…' : 'Look up';
+}
+
+function showStatus(type, msg) {
+  const el = document.getElementById('status-banner');
+  el.className = `status-banner ${type}`;
+  document.getElementById('spinner').style.display = type === 'loading' ? 'block' : 'none';
+  document.getElementById('status-text').textContent = msg;
+}
+
+// ─── Data helpers ────────────────────────────────────────────────────────────
+function getFacilityName(d) {
+  return d['Provider Name'] || d['provider_name'] || '—';
+}
+function getField(d, ...keys) {
+  for (const k of keys) {
+    if (d[k] !== undefined && d[k] !== null && d[k] !== '') return d[k];
+  }
+  return null;
+}
+function starClass(val) {
+  const n = parseInt(val);
+  if (n === 1) return 'star-1';
+  if (n === 2) return 'star-2';
+  if (n === 3) return 'star-3';
+  if (n === 4) return 'star-4';
+  if (n === 5) return 'star-5';
+  return '';
+}
+function starDisplay(val) {
+  const n = parseInt(val);
+  if (!n) return '—';
+  return '★'.repeat(n) + '☆'.repeat(5-n);
+}
+
+function findClaimsMeasure(code) {
+  if (!claimsData) return null;
+  return claimsData.find(r => {
+    const mc = r['Measure Code'] || r['measure_code'] || '';
+    return mc === String(code);
+  });
+}
+
+function pct(val) {
+  const n = parseFloat(val);
+  return isNaN(n) ? '—' : n.toFixed(1) + '%';
+}
+function per1k(val) {
+  const n = parseFloat(val);
+  return isNaN(n) ? '—' : n.toFixed(2);
+}
+
+// ─── Benchmark bar builder ────────────────────────────────────────────────────
+function buildBenchBar(container, rows) {
+  // rows: [{label, value, isAbove}]
+  container.innerHTML = '';
+  if (!rows || rows.length === 0) {
+    container.innerHTML = '<div style="font-size:12px;color:var(--gray-400);">Data not available for this facility.</div>';
+    return;
+  }
+
+  // Find max for scaling
+  const vals = rows.map(r => parseFloat(r.value) || 0);
+  const max = Math.max(...vals) * 1.3 || 1;
+
+  rows.forEach(row => {
+    const val = parseFloat(row.value) || 0;
+    const pctWidth = Math.min(100, (val / max) * 100);
+    const color = row.isFacility ? (row.isAbove ? 'var(--red)' : 'var(--teal)') : 'var(--gray-200)';
+    const valColor = row.isFacility ? (row.isAbove ? 'var(--red)' : 'var(--teal)') : 'var(--gray-400)';
+
+    const div = document.createElement('div');
+    div.className = 'bench-group';
+    div.innerHTML = `
+      <div class="bench-label-row">
+        <span class="bench-label" style="${row.isFacility ? 'font-weight:700;color:var(--gray-800)' : ''}">${row.label}</span>
+        <span class="bench-val" style="color:${valColor}">${row.display}</span>
+      </div>
+      <div class="bench-bar-wrap">
+        <div class="bench-bar" style="width:${pctWidth}%;background:${color}"></div>
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+// ─── Update Preview ─────────────────────────────────────────────────────────
+function updatePreview() {
+  // Always update operational fields
+  const emr = document.getElementById('emr').value;
+  const cap = document.getElementById('census-cap').value;
+  const cur = document.getElementById('census-cur').value;
+  const ptype = document.getElementById('patient-type').value;
+  const medcov = document.getElementById('medical-coverage').value;
+  const prevCov = document.getElementById('prev-coverage').value;
+  const prevPerf = document.getElementById('prev-perf').value;
+
+  setText('r-emr', emr || '—');
+  setText('r-cap', cap || '—');
+  setText('r-cur', cur || '—');
+  setText('r-ptype', ptype || '—');
+  setText('r-medcov', medcov || '—');
+  setText('r-prev-cov', prevCov || '—');
+  setText('r-prev-perf', prevPerf || '—');
+
+  if (!facilityData) return;
+
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('report-content').style.display = 'block';
+
+  const d = facilityData;
+  const nameOverride = document.getElementById('name-override').value.trim();
+  const displayName = nameOverride || getFacilityName(d);
+  const ccn = d['CMS Certification Number (CCN)'] || d['cms_certification_number_ccn'] || document.getElementById('ccn-input').value.trim();
+
+  setText('r-name', displayName);
+
+  const addr = [
+    getField(d, 'Provider Address', 'provider_address') || '',
+    getField(d, 'City/Town', 'city_town') || '',
+    getField(d, 'State', 'state') || '',
+    getField(d, 'ZIP Code', 'zip_code') || ''
+  ].filter(Boolean).join(', ');
+  setText('r-addr', addr || '—');
+  setText('r-ccn-badge', `CCN ${ccn}`);
+
+  // Stars
+  const overall = getField(d, 'Overall Rating', 'overall_rating');
+  const health = getField(d, 'Health Inspection Rating', 'health_inspection_rating');
+  const staff = getField(d, 'Staffing Rating', 'staffing_rating');
+  const qm = getField(d, 'QM Rating', 'qm_rating');
+
+  setStarEl('r-star-overall', overall);
+  setStarEl('r-star-health', health);
+  setStarEl('r-star-staff', staff);
+  setStarEl('r-star-qm', qm);
+
+  // Facility info
+  setText('r-ownership', getField(d, 'Ownership Type', 'ownership_type') || '—');
+  setText('r-beds', getField(d, 'Number of Certified Beds', 'number_of_certified_beds') || '—');
+  setText('r-avg-res', getField(d, 'Average Number of Residents per Day', 'average_number_of_residents_per_day') || '—');
+  const chain = getField(d, 'Chain Name', 'chain_name');
+  setText('r-chain', chain || 'Independent');
+
+  // Claims data - measure codes from CMS data dictionary
+  // 521 = SS rehospitalization, 522 = SS ED visit
+  // 551 = LS hospitalization per 1000 days, 552 = LS ED visit per 1000 days
+  const ssHosp = findClaimsMeasure('521');
+  const ssEd = findClaimsMeasure('522');
+  const lsHosp = findClaimsMeasure('551');
+  const lsEd = findClaimsMeasure('552');
+
+  // Short-stay hospitalization
+  buildBenchBar(document.getElementById('r-str-hosp-bars'), buildSSBars(ssHosp, 'Hospitalization %', true));
+
+  // Short-stay ED
+  buildBenchBar(document.getElementById('r-str-ed-bars'), buildSSBars(ssEd, 'ED Visit %', false));
+
+  // Long-stay hospitalization
+  buildBenchBar(document.getElementById('r-ls-hosp-bars'), buildLSBars(lsHosp, 'Hosp. per 1,000 days', true));
+
+  // Long-stay ED
+  buildBenchBar(document.getElementById('r-ls-ed-bars'), buildLSBars(lsEd, 'ED per 1,000 days', false));
+
+  // Medicare link
+  const link = document.getElementById('r-medicare-link');
+  link.href = `https://www.medicare.gov/care-compare/details/nursing-home/${ccn}`;
+
+  const procDate = getField(d, 'Processing Date', 'processing_date');
+  setText('r-processed-date', procDate ? `CMS data as of ${procDate}` : '');
+}
+
+function buildSSBars(measure, labelSuffix, lowerIsBetter) {
+  if (!measure) return [];
+  const facility = parseFloat(measure['Adjusted Score'] || measure['adjusted_score'] || measure['Observed Score'] || measure['observed_score']);
+  const national = parseFloat(measure['Expected Score'] || measure['expected_score']);
+  if (isNaN(facility)) return [];
+
+  const bars = [{ label: `This facility — ${labelSuffix}`, value: facility, display: pct(facility), isFacility: true, isAbove: lowerIsBetter ? facility > national : facility < national }];
+  if (!isNaN(national)) bars.push({ label: 'National average', value: national, display: pct(national), isFacility: false });
+  return bars;
+}
+
+function buildLSBars(measure, labelSuffix, lowerIsBetter) {
+  if (!measure) return [];
+  const facility = parseFloat(measure['Adjusted Score'] || measure['adjusted_score'] || measure['Observed Score'] || measure['observed_score']);
+  const national = parseFloat(measure['Expected Score'] || measure['expected_score']);
+  if (isNaN(facility)) return [];
+
+  const bars = [{ label: `This facility — ${labelSuffix}`, value: facility, display: per1k(facility), isFacility: true, isAbove: lowerIsBetter ? facility > national : facility < national }];
+  if (!isNaN(national)) bars.push({ label: 'National average', value: national, display: per1k(national), isFacility: false });
+  return bars;
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function setStarEl(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const n = parseInt(val);
+  if (!n || isNaN(n)) { el.textContent = '—'; el.className = 'star-value'; return; }
+  el.textContent = n + '★';
+  el.className = `star-value ${starClass(n)}`;
+}
+
+// ─── Enter key on CCN ─────────────────────────────────────────────────────────
+document.getElementById('ccn-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') lookupCCN();
+});
+document.getElementById('name-override').addEventListener('input', updatePreview);
+
+// ─── PDF Download ─────────────────────────────────────────────────────────────
+async function downloadPDF() {
+  if (!facilityData) return;
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+
+  const d = facilityData;
+  const nameOverride = document.getElementById('name-override').value.trim();
+  const displayName = nameOverride || getFacilityName(d);
+  const ccn = d['CMS Certification Number (CCN)'] || d['cms_certification_number_ccn'] || document.getElementById('ccn-input').value.trim();
+  const medicareUrl = `https://www.medicare.gov/care-compare/details/nursing-home/${ccn}`;
+
+  const addr = [
+    getField(d, 'Provider Address', 'provider_address') || '',
+    getField(d, 'City/Town', 'city_town') || '',
+    getField(d, 'State', 'state') || '',
+    getField(d, 'ZIP Code', 'zip_code') || ''
+  ].filter(Boolean).join(', ');
+
+  const pageW = 215.9;
+  const pageH = 279.4;
+  const margin = 18;
+  const contentW = pageW - margin * 2;
+
+  // ─ Header band ─
+  doc.setFillColor(11, 31, 58);
+  doc.rect(0, 0, pageW, 38, 'F');
+
+  // Logo mark
+  doc.setFillColor(0, 168, 120);
+  doc.roundedRect(margin, 8, 10, 10, 2, 2, 'F');
+  doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(255,255,255);
+  doc.text('M', margin + 3.5, 15.5);
+
+  // Company name
+  doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(255,255,255);
+  doc.text('MEDELITE', margin + 13, 15);
+  doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(154,163,178);
+  doc.text('Facility Assessment Snapshot', margin + 13, 21);
+
+  // Date
+  const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  doc.setFontSize(8); doc.setTextColor(154,163,178);
+  doc.text(today, pageW - margin, 21, { align: 'right' });
+
+  // Facility name + address
+  doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(255,255,255);
+  doc.text(displayName, margin, 31);
+
+  let y = 46;
+
+  // ─ CCN + Medicare link row ─
+  doc.setFillColor(238, 240, 244);
+  doc.roundedRect(margin, y, contentW, 9, 2, 2, 'F');
+  doc.setFontSize(8.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(90, 100, 120);
+  doc.text(`CCN: ${ccn}`, margin + 4, y + 6);
+  doc.text(addr, margin + 35, y + 6, { maxWidth: contentW - 100 });
+
+  // Medicare link
+  doc.setFontSize(8); doc.setTextColor(0, 145, 104);
+  const linkX = pageW - margin - 4;
+  doc.text('Medicare Care Compare ↗', linkX, y + 6, { align: 'right' });
+  doc.link(linkX - 62, y + 1, 65, 8, { url: medicareUrl });
+
+  y += 14;
+
+  // ─ Star ratings ─
+  const stars = [
+    ['Overall', getField(d,'Overall Rating','overall_rating')],
+    ['Health Insp.', getField(d,'Health Inspection Rating','health_inspection_rating')],
+    ['Staffing', getField(d,'Staffing Rating','staffing_rating')],
+    ['Quality Care', getField(d,'QM Rating','qm_rating')]
+  ];
+
+  const boxW = (contentW - 9) / 4;
+  stars.forEach(([label, val], i) => {
+    const x = margin + i * (boxW + 3);
+    const n = parseInt(val) || 0;
+    const col = starColor(n);
+    doc.setFillColor(...col.bg);
+    doc.roundedRect(x, y, boxW, 18, 2, 2, 'F');
+    doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(...col.fg);
+    doc.text(n ? `${n}★` : '—', x + boxW/2, y + 10, { align: 'center' });
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(90, 100, 120);
+    doc.text(label, x + boxW/2, y + 15.5, { align: 'center' });
+  });
+  y += 24;
+
+  // ─ Two column section: Facility + Operational ─
+  const halfW = (contentW - 6) / 2;
+
+  // Facility Info
+  sectionHeader(doc, margin, y, halfW, 'FACILITY INFO');
+  y += 6;
+
+  const ownership = getField(d,'Ownership Type','ownership_type') || '—';
+  const beds = getField(d,'Number of Certified Beds','number_of_certified_beds') || '—';
+  const avgRes = getField(d,'Average Number of Residents per Day','average_number_of_residents_per_day') || '—';
+  const chain = getField(d,'Chain Name','chain_name') || 'Independent';
+
+  const facilityRows = [
+    ['Ownership', ownership],
+    ['Certified beds', String(beds)],
+    ['Avg residents/day', String(avgRes)],
+    ['Chain', chain],
+  ];
+
+  const emr = document.getElementById('emr').value || '—';
+  const cap = document.getElementById('census-cap').value || '—';
+  const cur = document.getElementById('census-cur').value || '—';
+  const ptype = document.getElementById('patient-type').value || '—';
+  const medcov = document.getElementById('medical-coverage').value || '—';
+  const prevCov = document.getElementById('prev-coverage').value || '—';
+  const prevPerf = document.getElementById('prev-perf').value || '—';
+
+  const opsRows = [
+    ['EMR', emr],
+    ['Census capacity', cap],
+    ['Current census', cur],
+    ['Patient type', ptype],
+    ['Medical coverage', medcov],
+  ];
+
+  let yFac = y;
+  let yOps = y;
+
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(11,31,58);
+  doc.text('FACILITY INFO', margin, yFac);
+  yFac += 2;
+  doc.setDrawColor(220, 224, 232);
+  doc.line(margin, yFac, margin + halfW, yFac);
+  yFac += 4;
+
+  facilityRows.forEach(([k, v]) => {
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(90,100,120);
+    doc.text(k, margin, yFac);
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(44,51,68);
+    doc.text(v, margin + halfW, yFac, { align: 'right', maxWidth: halfW - 2 });
+    yFac += 6;
+  });
+
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(11,31,58);
+  doc.text('OPERATIONAL DETAILS', margin + halfW + 6, yOps);
+  yOps += 2;
+  doc.setDrawColor(220, 224, 232);
+  doc.line(margin + halfW + 6, yOps, pageW - margin, yOps);
+  yOps += 4;
+
+  opsRows.forEach(([k, v]) => {
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(90,100,120);
+    doc.text(k, margin + halfW + 6, yOps);
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(44,51,68);
+    doc.text(v, pageW - margin, yOps, { align: 'right', maxWidth: halfW - 2 });
+    yOps += 6;
+  });
+
+  y = Math.max(yFac, yOps) + 4;
+
+  // ─ Medelite History ─
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(11,31,58);
+  doc.text('MEDELITE HISTORY', margin, y);
+  y += 2;
+  doc.setDrawColor(220, 224, 232);
+  doc.line(margin, y, pageW - margin, y);
+  y += 4;
+
+  const histRows = [['Previous Medelite coverage', prevCov], ['Prior provider performance', prevPerf]];
+  histRows.forEach(([k, v]) => {
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(90,100,120);
+    doc.text(k, margin, y);
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(44,51,68);
+    doc.text(v, pageW - margin, y, { align: 'right' });
+    y += 6;
+  });
+  y += 2;
+
+  // ─ Hospitalization Tables ─
+  const ssHosp = findClaimsMeasure('521');
+  const ssEd = findClaimsMeasure('522');
+  const lsHosp = findClaimsMeasure('551');
+  const lsEd = findClaimsMeasure('552');
+
+  const tableStyle = { theme: 'plain', styles: { fontSize: 8.5, cellPadding: 3 }, headStyles: { fillColor: [11,31,58], textColor: [255,255,255], fontStyle: 'bold', fontSize: 7.5 }, alternateRowStyles: { fillColor: [247,248,250] }, tableWidth: contentW, margin: { left: margin } };
+
+  // Short-stay hospitalization
+  y = addClaimsTable(doc, y, margin, contentW, 'SHORT-STAY: REHOSPITALIZATION RATE', ssHosp,
+    ['This Facility', 'National Avg'], 'percentage', tableStyle);
+
+  y = addClaimsTable(doc, y, margin, contentW, 'SHORT-STAY: ED VISIT RATE', ssEd,
+    ['This Facility', 'National Avg'], 'percentage', tableStyle);
+
+  y = addClaimsTable(doc, y, margin, contentW, 'LONG-STAY: HOSPITALIZATIONS PER 1,000 RESIDENT DAYS', lsHosp,
+    ['This Facility', 'National Avg'], 'per1k', tableStyle);
+
+  y = addClaimsTable(doc, y, margin, contentW, 'LONG-STAY: ED VISITS PER 1,000 RESIDENT DAYS', lsEd,
+    ['This Facility', 'National Avg'], 'per1k', tableStyle);
+
+  // ─ Footer ─
+  const footerY = pageH - 14;
+  doc.setFillColor(247, 248, 250);
+  doc.rect(0, footerY, pageW, 14, 'F');
+  doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(154, 163, 178);
+  doc.text('Medelite Facility Assessment Report · Data sourced from CMS Provider Data Catalog', margin, footerY + 5.5);
+  doc.setTextColor(0, 145, 104);
+  doc.text(medicareUrl, margin, footerY + 10.5);
+  doc.link(margin, footerY + 7, 130, 5, { url: medicareUrl });
+  doc.setTextColor(154, 163, 178);
+  doc.text(`Generated ${today}`, pageW - margin, footerY + 10.5, { align: 'right' });
+
+  const filename = `Medelite_${(displayName).replace(/[^a-zA-Z0-9]/g,'_').substring(0,30)}_${ccn}.pdf`;
+  doc.save(filename);
+}
+
+function starColor(n) {
+  if (n === 1) return { bg: [253,234,234], fg: [214,59,59] };
+  if (n === 2) return { bg: [254,244,232], fg: [180,122,23] };
+  if (n === 3) return { bg: [253,246,232], fg: [160,122,36] };
+  if (n === 4) return { bg: [235,247,239], fg: [59,150,90] };
+  if (n === 5) return { bg: [230,247,243], fg: [0,145,104] };
+  return { bg: [238,240,244], fg: [90,100,120] };
+}
+
+function sectionHeader(doc, x, y, w, title) {
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(11,31,58);
+  doc.text(title, x, y);
+  doc.setDrawColor(220, 224, 232);
+  doc.line(x, y + 1.5, x + w, y + 1.5);
+}
+
+function addClaimsTable(doc, y, margin, contentW, title, measure, colLabels, mode, tableStyle) {
+  if (y > 230) { doc.addPage(); y = 20; }
+
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(11,31,58);
+  doc.text(title, margin, y + 4);
+  doc.setDrawColor(220, 224, 232);
+  doc.line(margin, y + 5.5, margin + contentW, y + 5.5);
+
+  y += 8;
+
+  if (!measure) {
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(154,163,178);
+    doc.text('No data available for this facility.', margin, y + 5);
+    return y + 12;
+  }
+
+  const adj = parseFloat(measure['Adjusted Score'] || measure['adjusted_score'] || measure['Observed Score'] || measure['observed_score']);
+  const exp = parseFloat(measure['Expected Score'] || measure['expected_score']);
+  const obs = parseFloat(measure['Observed Score'] || measure['observed_score']);
+
+  const fmt = mode === 'percentage'
+    ? (v) => isNaN(v) ? '—' : v.toFixed(1) + '%'
+    : (v) => isNaN(v) ? '—' : v.toFixed(2);
+
+  const rows = [
+    [colLabels[0] + ' (risk-adjusted)', fmt(adj)],
+    [colLabels[0] + ' (observed)', fmt(obs)],
+    [colLabels[1] + ' (expected)', fmt(exp)],
+  ].filter(r => r[1] !== '—');
+
+  doc.autoTable({
+    startY: y,
+    head: [['Measure', 'Value']],
+    body: rows.length ? rows : [['No data', '—']],
+    ...tableStyle,
+    columnStyles: { 0: { cellWidth: contentW * 0.72 }, 1: { cellWidth: contentW * 0.28, halign: 'right', fontStyle: 'bold' } },
+  });
+
+  return doc.lastAutoTable.finalY + 6;
+}
+</script>
+</body>
+</html>
