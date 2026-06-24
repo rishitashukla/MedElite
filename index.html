@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Medelite — Facility Assessment Report Generator</title>
+<title>INFINITE — Managed by MEDELITE · Facility Assessment</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
@@ -14,7 +14,6 @@
     --navy-mid: #163356;
     --teal: #00A878;
     --teal-light: #E6F7F3;
-    --teal-mid: #B3E8DA;
     --gold: #C8962A;
     --gold-light: #FDF6E8;
     --red: #D63B3B;
@@ -48,34 +47,36 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 60px;
+    height: 64px;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
   }
-  .logo-area { display: flex; align-items: center; gap: 10px; }
+  .logo-area { display: flex; align-items: center; gap: 12px; }
   .logo-mark {
-    width: 32px; height: 32px;
+    width: 36px; height: 36px;
     background: var(--teal);
-    border-radius: 6px;
+    border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 14px; color: #fff; letter-spacing: -0.5px;
+    font-weight: 900; font-size: 16px; color: #fff;
   }
-  .logo-text { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.3px; }
-  .logo-sub { color: var(--gray-400); font-size: 12px; font-weight: 400; margin-left: 4px; }
-  .header-badge {
+  .logo-block { display: flex; flex-direction: column; line-height: 1.2; }
+  .logo-infinite { color: #fff; font-size: 16px; font-weight: 800; letter-spacing: 1px; }
+  .logo-managed { color: var(--teal); font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .header-tag {
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.12);
     color: var(--gray-400);
     font-size: 11px;
-    padding: 4px 10px;
+    padding: 4px 12px;
     border-radius: 100px;
   }
 
   /* ── Layout ── */
   .app-body {
-    max-width: 1140px;
+    max-width: 1160px;
     margin: 0 auto;
     padding: 2rem 1.5rem 4rem;
     display: grid;
@@ -94,16 +95,12 @@
   .card-header {
     padding: 1rem 1.25rem 0.75rem;
     border-bottom: 1px solid var(--gray-100);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: flex; align-items: center; gap: 8px;
   }
   .card-icon {
-    width: 28px; height: 28px;
-    border-radius: 6px;
+    width: 28px; height: 28px; border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-    flex-shrink: 0;
+    font-size: 13px; flex-shrink: 0;
   }
   .card-icon.teal { background: var(--teal-light); color: var(--teal); }
   .card-icon.navy { background: #E8EDF5; color: var(--navy); }
@@ -111,29 +108,19 @@
   .card-title { font-size: 13px; font-weight: 600; color: var(--gray-800); }
   .card-body { padding: 1rem 1.25rem; }
 
-  /* ── Form elements ── */
   label {
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--gray-600);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 5px;
+    display: block; font-size: 11px; font-weight: 600;
+    color: var(--gray-600); text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 5px;
   }
-  input[type="text"], input[type="number"], select, textarea {
-    width: 100%;
-    padding: 9px 12px;
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius);
-    font-size: 14px;
-    color: var(--gray-800);
-    background: var(--white);
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
+  input[type="text"], input[type="number"], select {
+    width: 100%; padding: 9px 12px;
+    border: 1px solid var(--gray-200); border-radius: var(--radius);
+    font-size: 14px; color: var(--gray-800); background: var(--white);
+    outline: none; transition: border-color 0.15s, box-shadow 0.15s;
     font-family: inherit;
   }
-  input:focus, select:focus, textarea:focus {
+  input:focus, select:focus {
     border-color: var(--teal);
     box-shadow: 0 0 0 3px rgba(0,168,120,0.12);
   }
@@ -142,19 +129,12 @@
   .field:last-child { margin-bottom: 0; }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 
-  /* ── CCN Search ── */
   .ccn-input-wrap { display: flex; gap: 8px; }
   .ccn-input-wrap input { flex: 1; font-size: 15px; font-weight: 500; letter-spacing: 1px; }
   .btn-lookup {
-    padding: 9px 18px;
-    background: var(--navy);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
+    padding: 9px 18px; background: var(--navy); color: #fff;
+    border: none; border-radius: var(--radius); font-size: 13px;
+    font-weight: 600; cursor: pointer; white-space: nowrap;
     transition: background 0.15s, transform 0.1s;
     display: flex; align-items: center; gap: 6px;
   }
@@ -162,82 +142,60 @@
   .btn-lookup:active { transform: scale(0.98); }
   .btn-lookup:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* ── Status banner ── */
   .status-banner {
-    display: none;
-    padding: 10px 14px;
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-weight: 500;
-    margin-top: 0.75rem;
-    align-items: center;
-    gap: 8px;
+    display: none; padding: 10px 14px; border-radius: var(--radius);
+    font-size: 13px; font-weight: 500; margin-top: 0.75rem;
+    align-items: center; gap: 8px;
   }
   .status-banner.loading { display: flex; background: #EEF0F4; color: var(--gray-600); }
   .status-banner.success { display: flex; background: var(--teal-light); color: #076649; }
   .status-banner.error   { display: flex; background: var(--red-light); color: var(--red); }
   .spinner {
-    width: 14px; height: 14px;
-    border: 2px solid var(--gray-200);
-    border-top-color: var(--teal);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
+    width: 14px; height: 14px; border: 2px solid var(--gray-200);
+    border-top-color: var(--teal); border-radius: 50%;
+    animation: spin 0.7s linear infinite; flex-shrink: 0;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── Preview panel ── */
-  .preview-panel { position: sticky; top: 76px; }
+  .hint-text { font-size: 11px; color: var(--gray-400); margin-top: 5px; }
 
-  /* ── Report preview card ── */
+  /* ── Preview panel ── */
+  .preview-panel { position: sticky; top: 80px; }
+
   .report-card {
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-    overflow: hidden;
+    background: var(--white); border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden;
   }
-  .report-header {
+
+  /* Branding banner */
+  .report-brand-banner {
     background: var(--navy);
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    padding: 1rem 1.5rem 0.85rem;
+    text-align: center;
+    border-bottom: 3px solid var(--teal);
   }
-  .report-header-left .report-tag {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: var(--teal);
-    font-weight: 700;
-    margin-bottom: 4px;
+  .brand-infinite {
+    font-size: 22px; font-weight: 900; color: #fff;
+    letter-spacing: 3px; line-height: 1;
   }
-  .report-facility-name { font-size: 17px; font-weight: 700; color: #fff; line-height: 1.3; }
-  .report-facility-sub { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 3px; }
-  .report-ccn-badge {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 100px;
-    padding: 4px 10px;
-    font-size: 11px;
-    color: rgba(255,255,255,0.7);
-    white-space: nowrap;
-    font-family: monospace;
-    flex-shrink: 0;
-    margin-left: 12px;
-    margin-top: 2px;
+  .brand-dash { color: var(--teal); margin: 0 8px; }
+  .brand-managed { font-size: 11px; color: var(--teal); font-weight: 600; letter-spacing: 1px; margin-top: 2px; }
+  .brand-snapshot {
+    font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7);
+    letter-spacing: 2px; text-transform: uppercase; margin-top: 6px;
+  }
+  .brand-state {
+    font-size: 13px; font-weight: 800; color: var(--teal);
+    letter-spacing: 1px; margin-top: 1px;
   }
 
   .report-stars {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--gray-100);
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.5rem;
+    padding: 1rem 1.5rem; border-bottom: 1px solid var(--gray-100);
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 0.5rem;
   }
   .star-item { text-align: center; }
   .star-value { font-size: 22px; font-weight: 800; line-height: 1; margin-bottom: 2px; }
-  .star-label { font-size: 10px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.3px; line-height: 1.3; }
+  .star-label { font-size: 10px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.3px; }
   .star-1 { color: var(--red); }
   .star-2 { color: var(--orange); }
   .star-3 { color: var(--gold); }
@@ -250,19 +208,15 @@
   }
   .report-section:last-child { border-bottom: none; }
   .report-section-title {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 700;
-    color: var(--gray-400);
-    margin-bottom: 0.6rem;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    font-weight: 700; color: var(--gray-400); margin-bottom: 0.6rem;
   }
   .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 1rem; }
   .report-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
   .report-key { font-size: 12px; color: var(--gray-400); flex-shrink: 0; }
   .report-val { font-size: 12px; font-weight: 600; color: var(--gray-800); text-align: right; }
 
-  /* ── Benchmark bars ── */
+  /* Benchmark bars */
   .bench-group { margin-bottom: 0.65rem; }
   .bench-group:last-child { margin-bottom: 0; }
   .bench-label-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
@@ -271,39 +225,23 @@
   .bench-bar-wrap { height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden; }
   .bench-bar { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
   .bench-pill {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 1px 7px;
-    border-radius: 100px;
-    margin-left: 6px;
-    vertical-align: middle;
+    display: inline-block; font-size: 9px; font-weight: 700;
+    padding: 1px 6px; border-radius: 100px; margin-left: 5px;
   }
   .pill-good { background: var(--teal-light); color: #076649; }
   .pill-warn { background: var(--red-light); color: var(--red); }
-  .pill-neutral { background: var(--gray-100); color: var(--gray-600); }
 
-  /* ── Empty state ── */
   .empty-state { text-align: center; padding: 3rem 2rem; color: var(--gray-400); }
   .empty-icon { font-size: 36px; margin-bottom: 12px; }
   .empty-title { font-size: 15px; font-weight: 600; color: var(--gray-600); margin-bottom: 6px; }
   .empty-sub { font-size: 13px; }
 
-  /* ── Download button ── */
   .btn-download {
-    width: 100%;
-    padding: 12px;
-    background: var(--teal);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
+    width: 100%; padding: 12px; background: var(--teal); color: #fff;
+    border: none; border-radius: var(--radius); font-size: 14px;
+    font-weight: 700; cursor: pointer;
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: background 0.15s, transform 0.1s;
-    letter-spacing: 0.2px;
-    margin-top: 1rem;
+    transition: background 0.15s, transform 0.1s; margin-top: 1rem;
   }
   .btn-download:hover { background: #009168; }
   .btn-download:active { transform: scale(0.99); }
@@ -312,17 +250,10 @@
   .section-group { display: flex; flex-direction: column; gap: 1rem; }
 
   .medicare-link {
-    font-size: 12px;
-    color: var(--teal);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-weight: 500;
+    font-size: 12px; color: var(--teal); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 4px; font-weight: 500;
   }
   .medicare-link:hover { text-decoration: underline; }
-
-  .hint-text { font-size: 11px; color: var(--gray-400); margin-top: 6px; }
 
   @media (max-width: 860px) {
     .app-body { grid-template-columns: 1fr; }
@@ -335,18 +266,22 @@
 
 <header class="app-header">
   <div class="logo-area">
-    <div class="logo-mark">M</div>
-    <span class="logo-text">Medelite <span class="logo-sub">/ Facility Assessment</span></span>
+    <div class="logo-mark">∞</div>
+    <div class="logo-block">
+      <span class="logo-infinite">INFINITE</span>
+      <span class="logo-managed">Managed by MEDELITE</span>
+    </div>
   </div>
-  <span class="header-badge">Internal Tool · Directors</span>
+  <div class="header-right">
+    <span class="header-tag">Facility Assessment · Internal Tool</span>
+  </div>
 </header>
 
 <main class="app-body">
 
-  <!-- ── LEFT COLUMN ── -->
+  <!-- LEFT -->
   <div class="section-group">
 
-    <!-- CCN Lookup -->
     <div class="card">
       <div class="card-header">
         <div class="card-icon teal">⌕</div>
@@ -356,12 +291,12 @@
         <div class="field">
           <label>CMS Certification Number (CCN)</label>
           <div class="ccn-input-wrap">
-            <input type="text" id="ccn-input" placeholder="e.g. 105447" maxlength="10">
+            <input type="text" id="ccn-input" placeholder="e.g. 686123" maxlength="10">
             <button class="btn-lookup" id="btn-lookup" onclick="lookupCCN()">
               <span id="lookup-btn-text">Look up</span>
             </button>
           </div>
-          <div class="hint-text">Enter the 6-digit CCN, then press Look up or hit Enter.</div>
+          <div class="hint-text">Enter the CCN and press Look up or hit Enter.</div>
           <div class="status-banner" id="status-banner">
             <div class="spinner" id="spinner"></div>
             <span id="status-text"></span>
@@ -374,7 +309,6 @@
       </div>
     </div>
 
-    <!-- Operational Inputs -->
     <div class="card">
       <div class="card-header">
         <div class="card-icon navy">≡</div>
@@ -413,7 +347,6 @@
       </div>
     </div>
 
-    <!-- Medelite History -->
     <div class="card">
       <div class="card-header">
         <div class="card-icon gold">◈</div>
@@ -443,51 +376,39 @@
 
   </div>
 
-  <!-- ── RIGHT COLUMN: Live Preview ── -->
+  <!-- RIGHT: Preview -->
   <div class="preview-panel">
-    <div class="report-card" id="report-card">
+    <div class="report-card">
 
       <div class="empty-state" id="empty-state">
         <div class="empty-icon">🏥</div>
         <div class="empty-title">No facility loaded</div>
-        <div class="empty-sub">Enter a CCN on the left and click "Look up" to pull CMS data and build your report.</div>
+        <div class="empty-sub">Enter a CCN on the left and click "Look up" to pull CMS data.</div>
       </div>
 
       <div id="report-content" style="display:none;">
 
-        <div class="report-header">
-          <div class="report-header-left">
-            <div class="report-tag">Facility Assessment Snapshot · FL</div>
-            <div class="report-facility-name" id="r-name">—</div>
-            <div class="report-facility-sub" id="r-addr">—</div>
-          </div>
-          <span class="report-ccn-badge" id="r-ccn-badge">CCN —</span>
+        <!-- Branding banner -->
+        <div class="report-brand-banner">
+          <div class="brand-infinite">INFINITE<span class="brand-dash">—</span>Managed by MEDELITE</div>
+          <div class="brand-snapshot">FACILITY ASSESSMENT SNAPSHOT</div>
+          <div class="brand-state" id="r-state-code">—</div>
         </div>
 
-        <!-- Star ratings -->
+        <!-- Stars -->
         <div class="report-stars">
-          <div class="star-item">
-            <div class="star-value" id="r-star-overall">—</div>
-            <div class="star-label">Overall</div>
-          </div>
-          <div class="star-item">
-            <div class="star-value" id="r-star-health">—</div>
-            <div class="star-label">Health Insp.</div>
-          </div>
-          <div class="star-item">
-            <div class="star-value" id="r-star-staff">—</div>
-            <div class="star-label">Staffing</div>
-          </div>
-          <div class="star-item">
-            <div class="star-value" id="r-star-qm">—</div>
-            <div class="star-label">Quality Care</div>
-          </div>
+          <div class="star-item"><div class="star-value" id="r-star-overall">—</div><div class="star-label">Overall</div></div>
+          <div class="star-item"><div class="star-value" id="r-star-health">—</div><div class="star-label">Health Insp.</div></div>
+          <div class="star-item"><div class="star-value" id="r-star-staff">—</div><div class="star-label">Staffing</div></div>
+          <div class="star-item"><div class="star-value" id="r-star-qm">—</div><div class="star-label">Quality Care</div></div>
         </div>
 
         <!-- Facility Info -->
         <div class="report-section">
           <div class="report-section-title">Facility Info</div>
           <div class="report-grid">
+            <div class="report-row"><span class="report-key">Name of Facility</span><span class="report-val" id="r-name" style="font-size:11px;">—</span></div>
+            <div class="report-row"><span class="report-key">Location</span><span class="report-val" id="r-addr" style="font-size:11px;">—</span></div>
             <div class="report-row"><span class="report-key">Ownership</span><span class="report-val" id="r-ownership">—</span></div>
             <div class="report-row"><span class="report-key">Certified beds</span><span class="report-val" id="r-beds">—</span></div>
             <div class="report-row"><span class="report-key">Avg residents/day</span><span class="report-val" id="r-avg-res">—</span></div>
@@ -516,36 +437,28 @@
           </div>
         </div>
 
-        <!-- Short-Stay Hospitalization -->
+        <!-- QM Sections -->
         <div class="report-section">
           <div class="report-section-title">Short-Stay: Rehospitalization Rate</div>
           <div id="r-str-hosp-bars"></div>
         </div>
-
-        <!-- Short-Stay ED Visits -->
         <div class="report-section">
           <div class="report-section-title">Short-Stay: ED Visit Rate</div>
           <div id="r-str-ed-bars"></div>
         </div>
-
-        <!-- Long-Stay Hospitalization -->
         <div class="report-section">
           <div class="report-section-title">Long-Stay: Hospitalizations per 1,000 Resident Days</div>
           <div id="r-ls-hosp-bars"></div>
         </div>
-
-        <!-- Long-Stay ED Visits -->
         <div class="report-section">
           <div class="report-section-title">Long-Stay: ED Visits per 1,000 Resident Days</div>
           <div id="r-ls-ed-bars"></div>
         </div>
 
-        <!-- Data Source -->
+        <!-- Source -->
         <div class="report-section">
           <div class="report-section-title">Data Source</div>
-          <a class="medicare-link" id="r-medicare-link" href="#" target="_blank">
-            ↗ View on Medicare Care Compare
-          </a>
+          <a class="medicare-link" id="r-medicare-link" href="#" target="_blank">↗ View on Medicare Care Compare</a>
           <div style="font-size:11px;color:var(--gray-400);margin-top:4px;" id="r-processed-date"></div>
         </div>
 
@@ -556,36 +469,42 @@
 </main>
 
 <script>
-// ─── State ───────────────────────────────────────────────────────────────────
+// ─── State ────────────────────────────────────────────────────────────────────
 let facilityData = null;
 let claimsData   = [];
-let stateAvgData = null; // state + national averages from NH_StateUSAverages
+let stateAvgData = null;
 
-// ─── CMS API helpers ─────────────────────────────────────────────────────────
-// Provider Info dataset resource ID
-const PROV_RESOURCE = '4pq5-n9py';
-// Medicare Claims Quality Measures resource ID
-const CLAIMS_RESOURCE = 'tbry-pc3d';
-// State/US Averages resource ID
+// ─── CMS API (with corsproxy for GitHub Pages) ────────────────────────────────
+const PROV_RESOURCE      = '4pq5-n9py';
+const CLAIMS_RESOURCE    = 'tbry-pc3d';
 const STATE_AVG_RESOURCE = 'wse2-w6yg';
 
 async function cmsQuery(resource, conditions, limit = 100) {
-  const filters = conditions.map((c, i) =>
-    `conditions%5B${i}%5D%5Bproperty%5D=${encodeURIComponent(c.property)}&conditions%5B${i}%5D%5Bvalue%5D=${encodeURIComponent(c.value)}&conditions%5B${i}%5D%5Boperator%5D=%3D`
+  const params = conditions.map((c, i) =>
+    `conditions%5B${i}%5D%5Bproperty%5D=${encodeURIComponent(c.property)}` +
+    `&conditions%5B${i}%5D%5Bvalue%5D=${encodeURIComponent(c.value)}` +
+    `&conditions%5B${i}%5D%5Boperator%5D=%3D`
   ).join('&');
-  const url = `https://data.cms.gov/provider-data/api/1/datastore/query/${resource}/0?${filters}&limit=${limit}`;
+  const url = `https://data.cms.gov/provider-data/api/1/datastore/query/${resource}/0?${params}&limit=${limit}`;
+
+  // Try direct first (works locally), fall back to corsproxy (needed on GitHub Pages)
+  try {
+    const r = await fetch(url);
+    if (r.ok) return r.json();
+  } catch(e) {}
+
   const proxied = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-  const r = await fetch(proxied);
-  if (!r.ok) throw new Error(`CMS ${r.status}`);
-  return r.json();
+  const r2 = await fetch(proxied);
+  if (!r2.ok) throw new Error(`CMS ${r2.status}`);
+  return r2.json();
 }
 
-// ─── CCN Lookup ──────────────────────────────────────────────────────────────
+// ─── Lookup ───────────────────────────────────────────────────────────────────
 async function lookupCCN() {
   const raw = document.getElementById('ccn-input').value.trim();
   if (!raw) { showStatus('error', 'Enter a CCN before looking up.'); return; }
-
   const ccn = raw.padStart(6, '0');
+
   setBtnLoading(true);
   showStatus('loading', 'Fetching facility data from CMS…');
   facilityData = null; claimsData = []; stateAvgData = null;
@@ -595,41 +514,28 @@ async function lookupCCN() {
   document.getElementById('name-override-wrap').style.display = 'none';
 
   try {
-    // 1. Provider info
-    const provJson = await cmsQuery(PROV_RESOURCE, [
-      { property: 'CMS Certification Number (CCN)', value: ccn }
-    ], 1);
-
-    if (!provJson.results || provJson.results.length === 0) {
-      throw new Error(`No facility found for CCN ${ccn}. Check the number and try again.`);
-    }
+    const provJson = await cmsQuery(PROV_RESOURCE, [{ property: 'CMS Certification Number (CCN)', value: ccn }], 1);
+    if (!provJson.results || provJson.results.length === 0)
+      throw new Error(`No facility found for CCN ${ccn}. Verify the number and try again.`);
     facilityData = provJson.results[0];
 
     const state = getField(facilityData, 'State', 'state') || '';
 
-    // 2. Claims quality measures (hospitalization / ED)
     showStatus('loading', 'Fetching quality measures…');
     try {
-      const claimsJson = await cmsQuery(CLAIMS_RESOURCE, [
-        { property: 'CMS Certification Number (CCN)', value: ccn }
-      ], 50);
-      claimsData = claimsJson.results || [];
+      const cj = await cmsQuery(CLAIMS_RESOURCE, [{ property: 'CMS Certification Number (CCN)', value: ccn }], 50);
+      claimsData = cj.results || [];
     } catch(e) { claimsData = []; }
 
-    // 3. State & national averages (one row per state + NATION row)
     showStatus('loading', 'Fetching state & national benchmarks…');
     try {
-      const stateJson = await cmsQuery(STATE_AVG_RESOURCE, [
-        { property: 'State or Nation', value: state }
-      ], 1);
-      // Also fetch NATION row
-      const nationJson = await cmsQuery(STATE_AVG_RESOURCE, [
-        { property: 'State or Nation', value: 'NATION' }
-      ], 1);
-
+      const [sj, nj] = await Promise.all([
+        cmsQuery(STATE_AVG_RESOURCE, [{ property: 'State or Nation', value: state }], 1),
+        cmsQuery(STATE_AVG_RESOURCE, [{ property: 'State or Nation', value: 'NATION' }], 1),
+      ]);
       stateAvgData = {
-        state: stateJson.results && stateJson.results[0] ? stateJson.results[0] : null,
-        nation: nationJson.results && nationJson.results[0] ? nationJson.results[0] : null,
+        state:  sj.results && sj.results[0]  ? sj.results[0]  : null,
+        nation: nj.results && nj.results[0] ? nj.results[0] : null,
       };
     } catch(e) { stateAvgData = null; }
 
@@ -637,23 +543,19 @@ async function lookupCCN() {
     document.getElementById('name-override-wrap').style.display = 'block';
     document.getElementById('name-override').value = '';
     document.getElementById('name-override').placeholder = getFacilityName(facilityData);
-
     updatePreview();
     document.getElementById('btn-download').disabled = false;
 
   } catch(err) {
-    showStatus('error', err.message || 'Failed to fetch data. Check the CCN and your connection.');
+    showStatus('error', err.message || 'Failed to fetch. Check the CCN and your connection.');
   }
-
   setBtnLoading(false);
 }
 
-function setBtnLoading(loading) {
-  const btn = document.getElementById('btn-lookup');
-  btn.disabled = loading;
-  document.getElementById('lookup-btn-text').textContent = loading ? 'Loading…' : 'Look up';
+function setBtnLoading(on) {
+  document.getElementById('btn-lookup').disabled = on;
+  document.getElementById('lookup-btn-text').textContent = on ? 'Loading…' : 'Look up';
 }
-
 function showStatus(type, msg) {
   const el = document.getElementById('status-banner');
   el.className = `status-banner ${type}`;
@@ -661,178 +563,84 @@ function showStatus(type, msg) {
   document.getElementById('status-text').textContent = msg;
 }
 
-// ─── Data helpers ─────────────────────────────────────────────────────────────
-function getFacilityName(d) {
-  return d['Provider Name'] || d['provider_name'] || '—';
-}
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function getFacilityName(d) { return d['Provider Name'] || d['provider_name'] || '—'; }
 function getField(d, ...keys) {
-  for (const k of keys) {
-    if (d[k] !== undefined && d[k] !== null && d[k] !== '') return d[k];
-  }
+  for (const k of keys) if (d[k] !== undefined && d[k] !== null && d[k] !== '') return d[k];
   return null;
 }
-
-// Find a claims measure by code (numeric or string match)
 function findClaimsMeasure(code) {
-  if (!claimsData || !claimsData.length) return null;
-  const target = String(code);
-  return claimsData.find(r => {
-    const mc = String(r['Measure Code'] || r['measure_code'] || '').trim();
-    return mc === target;
-  }) || null;
+  return claimsData.find(r => String(r['Measure Code'] || r['measure_code'] || '').trim() === String(code)) || null;
 }
-
-// Pull a numeric field from the state averages row
-function getStateAvg(field) {
-  const v = stateAvgData && stateAvgData.state ? stateAvgData.state[field] : null;
+function getNationAvg(f) {
+  const v = stateAvgData && stateAvgData.nation ? stateAvgData.nation[f] : null;
   return v !== null && v !== undefined && v !== '' ? parseFloat(v) : null;
 }
-function getNationAvg(field) {
-  const v = stateAvgData && stateAvgData.nation ? stateAvgData.nation[field] : null;
+function getStateAvg(f) {
+  const v = stateAvgData && stateAvgData.state ? stateAvgData.state[f] : null;
   return v !== null && v !== undefined && v !== '' ? parseFloat(v) : null;
 }
+function pct(v)  { const n = parseFloat(v); return isNaN(n) ? '—' : n.toFixed(1) + '%'; }
+function per1k(v){ const n = parseFloat(v); return isNaN(n) ? '—' : n.toFixed(2); }
+function starClass(n) { return ['','star-1','star-2','star-3','star-4','star-5'][parseInt(n)] || ''; }
 
-function pct(v) {
-  const n = parseFloat(v);
-  return isNaN(n) ? '—' : n.toFixed(1) + '%';
-}
-function per1k(v) {
-  const n = parseFloat(v);
-  return isNaN(n) ? '—' : n.toFixed(2);
-}
-function fmtStar(val) {
-  const n = parseInt(val);
-  if (!n || isNaN(n)) return '—';
-  return n + '★';
-}
-function starClass(val) {
-  const n = parseInt(val);
-  return ['','star-1','star-2','star-3','star-4','star-5'][n] || '';
+const AVG_FIELDS = {
+  ssHosp: 'Percentage of short stay residents who were rehospitalized after a nursing home admission',
+  ssEd:   'Percentage of short stay residents who had an outpatient emergency department visit',
+  lsHosp: 'Number of hospitalizations per 1000 long-stay resident days',
+  lsEd:   'Number of outpatient emergency department visits per 1000 long-stay resident days',
+};
+
+function buildBarRows(measure, fmtFn, avgKey) {
+  if (!measure) return [];
+  const fVal = parseFloat(getField(measure, 'Adjusted Score', 'adjusted_score') ?? getField(measure, 'Observed Score', 'observed_score') ?? '');
+  if (isNaN(fVal)) return [];
+  const natVal   = getNationAvg(AVG_FIELDS[avgKey]);
+  const statVal  = getStateAvg(AVG_FIELDS[avgKey]);
+  const isAbove  = natVal !== null ? fVal > natVal : undefined;
+  const rows = [{ label: 'This facility', value: fVal, display: fmtFn(fVal), isFacility: true, isAbove }];
+  if (natVal !== null) rows.push({ label: 'National avg', value: natVal, display: fmtFn(natVal), isFacility: false });
+  if (statVal !== null && Math.abs(statVal - (natVal || 0)) > 0.001)
+    rows.push({ label: 'State avg', value: statVal, display: fmtFn(statVal), isFacility: false });
+  return rows;
 }
 
-// ─── Benchmark bar builder ────────────────────────────────────────────────────
-/*
-  rows: [{ label, value (numeric), display (string), isFacility, isAbove (bool — true = worse) }]
-*/
 function buildBenchBar(containerId, rows) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.innerHTML = '';
-
-  if (!rows || rows.length === 0) {
-    container.innerHTML = '<div style="font-size:12px;color:var(--gray-400);">No data available for this facility.</div>';
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  c.innerHTML = '';
+  if (!rows || !rows.length) {
+    c.innerHTML = '<div style="font-size:12px;color:var(--gray-400);">No data available.</div>';
     return;
   }
-
-  const vals = rows.map(r => parseFloat(r.value) || 0);
-  const maxVal = Math.max(...vals) * 1.35 || 1;
-
+  const maxVal = Math.max(...rows.map(r => parseFloat(r.value) || 0)) * 1.35 || 1;
   rows.forEach(row => {
-    const val = parseFloat(row.value) || 0;
-    const pctW = Math.min(100, (val / maxVal) * 100);
-
-    let barColor, valColor, pillHTML = '';
-    if (row.isFacility) {
-      barColor = row.isAbove ? 'var(--red)' : 'var(--teal)';
-      valColor = row.isAbove ? 'var(--red)' : 'var(--teal)';
-      if (row.isAbove !== undefined) {
-        pillHTML = row.isAbove
-          ? '<span class="bench-pill pill-warn">Above avg</span>'
-          : '<span class="bench-pill pill-good">Below avg</span>';
-      }
-    } else {
-      barColor = 'var(--gray-200)';
-      valColor = 'var(--gray-400)';
-    }
-
+    const pctW = Math.min(100, ((parseFloat(row.value) || 0) / maxVal) * 100);
+    const barColor = row.isFacility ? (row.isAbove ? 'var(--red)' : 'var(--teal)') : 'var(--gray-200)';
+    const valColor = row.isFacility ? (row.isAbove ? 'var(--red)' : 'var(--teal)') : 'var(--gray-400)';
+    const pill = row.isFacility && row.isAbove !== undefined
+      ? `<span class="bench-pill ${row.isAbove ? 'pill-warn' : 'pill-good'}">${row.isAbove ? 'Above avg' : 'Below avg'}</span>` : '';
     const div = document.createElement('div');
     div.className = 'bench-group';
     div.innerHTML = `
       <div class="bench-label-row">
-        <span class="bench-label" style="${row.isFacility ? 'font-weight:700;color:var(--gray-800)' : ''}">${row.label}${pillHTML}</span>
+        <span class="bench-label" style="${row.isFacility ? 'font-weight:700;color:var(--gray-800)' : ''}">${row.label}${pill}</span>
         <span class="bench-val" style="color:${valColor}">${row.display}</span>
       </div>
-      <div class="bench-bar-wrap">
-        <div class="bench-bar" style="width:${pctW}%;background:${barColor}"></div>
-      </div>`;
-    container.appendChild(div);
+      <div class="bench-bar-wrap"><div class="bench-bar" style="width:${pctW}%;background:${barColor}"></div></div>`;
+    c.appendChild(div);
   });
-}
-
-// ─── Build bar rows for short-stay claims measures ────────────────────────────
-// Measure 521 = SS rehospitalization %, 522 = SS ED visit %
-// For short-stay: CMS stores adjusted score; national/state come from NH_StateUSAverages
-// StateUSAverages fields (from data dictionary Table 3):
-//   "Percentage of short stay residents who were rehospitalized after a nursing home admission"
-//   "Percentage of short stay residents who had an outpatient emergency department visit"
-// Long-stay:
-//   "Number of hospitalizations per 1000 long-stay resident days"
-//   "Number of outpatient emergency department visits per 1000 long-stay resident days"
-
-const AVG_FIELDS = {
-  ssHosp: {
-    nation: 'Percentage of short stay residents who were rehospitalized after a nursing home admission',
-    state:  'Percentage of short stay residents who were rehospitalized after a nursing home admission',
-  },
-  ssEd: {
-    nation: 'Percentage of short stay residents who had an outpatient emergency department visit',
-    state:  'Percentage of short stay residents who had an outpatient emergency department visit',
-  },
-  lsHosp: {
-    nation: 'Number of hospitalizations per 1000 long-stay resident days',
-    state:  'Number of hospitalizations per 1000 long-stay resident days',
-  },
-  lsEd: {
-    nation: 'Number of outpatient emergency department visits per 1000 long-stay resident days',
-    state:  'Number of outpatient emergency department visits per 1000 long-stay resident days',
-  }
-};
-
-function buildBarRows(measure, fmtFn, lowerIsBetter, avgKey) {
-  const rows = [];
-
-  // Facility value: try adjusted score first, then observed
-  const facilityRaw =
-    getField(measure || {}, 'Adjusted Score', 'adjusted_score') ??
-    getField(measure || {}, 'Observed Score', 'observed_score');
-  const facilityVal = parseFloat(facilityRaw);
-
-  // National average from StateUSAverages
-  const nationalVal = getNationAvg(AVG_FIELDS[avgKey].nation);
-  // State average
-  const stateVal = getStateAvg(AVG_FIELDS[avgKey].state);
-
-  if (!measure || isNaN(facilityVal)) {
-    return [];
-  }
-
-  // Determine above/below based on national average
-  const isAbove = nationalVal !== null
-    ? (lowerIsBetter ? facilityVal > nationalVal : facilityVal < nationalVal)
-    : undefined;
-
-  rows.push({ label: 'This facility', value: facilityVal, display: fmtFn(facilityVal), isFacility: true, isAbove });
-
-  if (nationalVal !== null) {
-    rows.push({ label: 'National avg', value: nationalVal, display: fmtFn(nationalVal), isFacility: false });
-  }
-  if (stateVal !== null && Math.abs(stateVal - (nationalVal || 0)) > 0.001) {
-    rows.push({ label: 'State avg', value: stateVal, display: fmtFn(stateVal), isFacility: false });
-  }
-
-  return rows;
 }
 
 // ─── Update Preview ───────────────────────────────────────────────────────────
 function updatePreview() {
-  // Operational fields always update
-  setText('r-emr',      document.getElementById('emr').value || '—');
-  setText('r-cap',      document.getElementById('census-cap').value || '—');
-  setText('r-cur',      document.getElementById('census-cur').value || '—');
-  setText('r-ptype',    document.getElementById('patient-type').value || '—');
-  setText('r-medcov',   document.getElementById('medical-coverage').value || '—');
-  setText('r-prev-cov', document.getElementById('prev-coverage').value || '—');
-  setText('r-prev-perf',document.getElementById('prev-perf').value || '—');
+  setText('r-emr',       document.getElementById('emr').value || '—');
+  setText('r-cap',       document.getElementById('census-cap').value || '—');
+  setText('r-cur',       document.getElementById('census-cur').value || '—');
+  setText('r-ptype',     document.getElementById('patient-type').value || '—');
+  setText('r-medcov',    document.getElementById('medical-coverage').value || '—');
+  setText('r-prev-cov',  document.getElementById('prev-coverage').value || '—');
+  setText('r-prev-perf', document.getElementById('prev-perf').value || '—');
 
   if (!facilityData) return;
 
@@ -842,169 +650,149 @@ function updatePreview() {
   const d = facilityData;
   const nameOverride = document.getElementById('name-override').value.trim();
   const displayName  = nameOverride || getFacilityName(d);
-  const ccn = getField(d, 'CMS Certification Number (CCN)', 'cms_certification_number_ccn')
-              || document.getElementById('ccn-input').value.trim();
+  const ccn   = getField(d, 'CMS Certification Number (CCN)', 'cms_certification_number_ccn') || document.getElementById('ccn-input').value.trim();
+  const state = getField(d, 'State', 'state') || '—';
 
-  setText('r-name', displayName);
+  // Branding — INFINITE stays fixed, only state code is dynamic
+  setText('r-state-code', state);
 
-  const addr = [
-    getField(d, 'Provider Address', 'provider_address'),
-    getField(d, 'City/Town', 'city_town'),
-    getField(d, 'State', 'state'),
-    getField(d, 'ZIP Code', 'zip_code')
-  ].filter(Boolean).join(', ');
-  setText('r-addr', addr || '—');
-  setText('r-ccn-badge', `CCN ${ccn}`);
+  // Facility info in body
+  setText('r-name',      displayName);
+  const addr = [getField(d,'Provider Address','provider_address'), getField(d,'City/Town','city_town'), state, getField(d,'ZIP Code','zip_code')].filter(Boolean).join(', ');
+  setText('r-addr',      addr || '—');
+  setText('r-ownership', getField(d,'Ownership Type','ownership_type') || '—');
+  setText('r-beds',      getField(d,'Number of Certified Beds','number_of_certified_beds') || '—');
+  setText('r-avg-res',   getField(d,'Average Number of Residents per Day','average_number_of_residents_per_day') || '—');
+  setText('r-chain',     getField(d,'Chain Name','chain_name') || 'Independent');
 
   // Stars
-  setStarEl('r-star-overall', getField(d, 'Overall Rating', 'overall_rating'));
-  setStarEl('r-star-health',  getField(d, 'Health Inspection Rating', 'health_inspection_rating'));
-  setStarEl('r-star-staff',   getField(d, 'Staffing Rating', 'staffing_rating'));
-  setStarEl('r-star-qm',      getField(d, 'QM Rating', 'qm_rating'));
+  setStarEl('r-star-overall', getField(d,'Overall Rating','overall_rating'));
+  setStarEl('r-star-health',  getField(d,'Health Inspection Rating','health_inspection_rating'));
+  setStarEl('r-star-staff',   getField(d,'Staffing Rating','staffing_rating'));
+  setStarEl('r-star-qm',      getField(d,'QM Rating','qm_rating'));
 
-  // Facility info
-  setText('r-ownership', getField(d, 'Ownership Type', 'ownership_type') || '—');
-  setText('r-beds',      getField(d, 'Number of Certified Beds', 'number_of_certified_beds') || '—');
-  setText('r-avg-res',   getField(d, 'Average Number of Residents per Day', 'average_number_of_residents_per_day') || '—');
-  setText('r-chain',     getField(d, 'Chain Name', 'chain_name') || 'Independent');
+  // Benchmark bars
+  buildBenchBar('r-str-hosp-bars', buildBarRows(findClaimsMeasure('521'), pct,   'ssHosp'));
+  buildBenchBar('r-str-ed-bars',   buildBarRows(findClaimsMeasure('522'), pct,   'ssEd'));
+  buildBenchBar('r-ls-hosp-bars',  buildBarRows(findClaimsMeasure('551'), per1k, 'lsHosp'));
+  buildBenchBar('r-ls-ed-bars',    buildBarRows(findClaimsMeasure('552'), per1k, 'lsEd'));
 
-  // Quality measures
-  const ssHosp = findClaimsMeasure('521');
-  const ssEd   = findClaimsMeasure('522');
-  const lsHosp = findClaimsMeasure('551');
-  const lsEd   = findClaimsMeasure('552');
-
-  buildBenchBar('r-str-hosp-bars', buildBarRows(ssHosp, pct,   true,  'ssHosp'));
-  buildBenchBar('r-str-ed-bars',   buildBarRows(ssEd,   pct,   true,  'ssEd'));
-  buildBenchBar('r-ls-hosp-bars',  buildBarRows(lsHosp, per1k, true,  'lsHosp'));
-  buildBenchBar('r-ls-ed-bars',    buildBarRows(lsEd,   per1k, true,  'lsEd'));
-
-  // Source link
   const link = document.getElementById('r-medicare-link');
   link.href = `https://www.medicare.gov/care-compare/details/nursing-home/${ccn}`;
-  link.textContent = '↗ View on Medicare Care Compare';
-
-  const procDate = getField(d, 'Processing Date', 'processing_date');
+  const procDate = getField(d,'Processing Date','processing_date');
   setText('r-processed-date', procDate ? `CMS data as of ${procDate}` : '');
 }
 
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
+function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
 function setStarEl(id, val) {
-  const el = document.getElementById(id);
-  if (!el) return;
+  const el = document.getElementById(id); if (!el) return;
   const n = parseInt(val);
   if (!n || isNaN(n)) { el.textContent = '—'; el.className = 'star-value'; return; }
-  el.textContent = n + '★';
-  el.className = `star-value ${starClass(n)}`;
+  el.textContent = n + '★'; el.className = `star-value ${starClass(n)}`;
 }
 
-// ─── Enter key ────────────────────────────────────────────────────────────────
-document.getElementById('ccn-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') lookupCCN();
-});
+document.getElementById('ccn-input').addEventListener('keydown', e => { if (e.key === 'Enter') lookupCCN(); });
 document.getElementById('name-override').addEventListener('input', updatePreview);
 
-// ─── PDF Download ─────────────────────────────────────────────────────────────
+// ─── PDF ─────────────────────────────────────────────────────────────────────
 async function downloadPDF() {
   if (!facilityData) return;
-
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
 
   const d = facilityData;
   const nameOverride = document.getElementById('name-override').value.trim();
   const displayName  = nameOverride || getFacilityName(d);
-  const ccn = getField(d, 'CMS Certification Number (CCN)', 'cms_certification_number_ccn')
-              || document.getElementById('ccn-input').value.trim();
+  const ccn   = getField(d,'CMS Certification Number (CCN)','cms_certification_number_ccn') || document.getElementById('ccn-input').value.trim();
+  const state = getField(d,'State','state') || '';
+  const addr  = [getField(d,'Provider Address','provider_address'), getField(d,'City/Town','city_town'), state, getField(d,'ZIP Code','zip_code')].filter(Boolean).join(', ');
   const medicareUrl = `https://www.medicare.gov/care-compare/details/nursing-home/${ccn}`;
+  const today = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
 
-  const addr = [
-    getField(d, 'Provider Address', 'provider_address'),
-    getField(d, 'City/Town', 'city_town'),
-    getField(d, 'State', 'state'),
-    getField(d, 'ZIP Code', 'zip_code')
-  ].filter(Boolean).join(', ');
-
-  const pageW   = 215.9;
-  const pageH   = 279.4;
-  const margin  = 18;
+  const pageW = 215.9, pageH = 279.4, margin = 18;
   const contentW = pageW - margin * 2;
-  const today   = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-  // ─ Navy header band ─
-  doc.setFillColor(11, 31, 58);
-  doc.rect(0, 0, pageW, 40, 'F');
+  // ── Branding header ──
+  doc.setFillColor(11,31,58);
+  doc.rect(0, 0, pageW, 44, 'F');
+
+  // Teal accent bar
+  doc.setFillColor(0,168,120);
+  doc.rect(0, 44, pageW, 3, 'F');
 
   // Logo mark
-  doc.setFillColor(0, 168, 120);
-  doc.roundedRect(margin, 9, 10, 10, 2, 2, 'F');
-  doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(255,255,255);
-  doc.text('M', margin + 3.5, 16.5);
+  doc.setFillColor(0,168,120);
+  doc.roundedRect(margin, 8, 12, 12, 2, 2, 'F');
+  doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text('∞', margin + 4, 17);
 
-  doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(255,255,255);
-  doc.text('MEDELITE', margin + 13, 15.5);
-  doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(154,163,178);
-  doc.text('Facility Assessment Snapshot', margin + 13, 21);
+  // INFINITE — Managed by MEDELITE
+  doc.setFontSize(16); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text('INFINITE', margin + 16, 16);
+  doc.setTextColor(0,168,120);
+  doc.text(' — Managed by MEDELITE', margin + 16 + doc.getTextWidth('INFINITE'), 16);
 
-  doc.setFontSize(8); doc.setTextColor(154,163,178);
-  doc.text(today, pageW - margin, 21, { align: 'right' });
+  // FACILITY ASSESSMENT SNAPSHOT
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(200,210,220);
+  doc.text('FACILITY ASSESSMENT SNAPSHOT', margin + 16, 23);
 
-  doc.setFontSize(14); doc.setFont('helvetica', 'bold'); doc.setTextColor(255,255,255);
-  doc.text(displayName, margin, 33, { maxWidth: contentW - 40 });
+  // State code
+  doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(0,168,120);
+  doc.text(state, margin + 16, 30);
 
-  let y = 48;
+  // Date top right
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(154,163,178);
+  doc.text(today, pageW - margin, 16, { align:'right' });
 
-  // ─ CCN + address bar ─
-  doc.setFillColor(238, 240, 244);
+  let y = 54;
+
+  // ── CCN + address bar ──
+  doc.setFillColor(238,240,244);
   doc.roundedRect(margin, y, contentW, 9, 2, 2, 'F');
-  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(11,31,58);
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(11,31,58);
   doc.text(`CCN: ${ccn}`, margin + 4, y + 6);
-  doc.setFont('helvetica', 'normal'); doc.setTextColor(90,100,120);
+  doc.setFont('helvetica','normal'); doc.setTextColor(90,100,120);
   doc.text(addr, margin + 32, y + 6, { maxWidth: contentW - 100 });
-
-  // Medicare clickable link (right-aligned)
-  doc.setFontSize(7.5); doc.setTextColor(0, 145, 104);
-  doc.text('Medicare Care Compare ↗', pageW - margin - 3, y + 6, { align: 'right' });
+  doc.setFontSize(7.5); doc.setTextColor(0,145,104);
+  doc.text('Medicare Care Compare ↗', pageW - margin - 3, y + 6, { align:'right' });
   doc.link(pageW - margin - 64, y + 1, 63, 8, { url: medicareUrl });
-
   y += 14;
 
-  // ─ Star ratings ─
-  const stars = [
-    ['Overall',      getField(d, 'Overall Rating', 'overall_rating')],
-    ['Health Insp.', getField(d, 'Health Inspection Rating', 'health_inspection_rating')],
-    ['Staffing',     getField(d, 'Staffing Rating', 'staffing_rating')],
-    ['Quality Care', getField(d, 'QM Rating', 'qm_rating')]
-  ];
+  // ── Name of Facility (in body, not in branding) ──
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(11,31,58);
+  doc.text('NAME OF FACILITY', margin, y); y += 2;
+  doc.setDrawColor(220,224,232); doc.line(margin, y, pageW - margin, y); y += 4;
+  doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(44,51,68);
+  doc.text(displayName, margin, y); y += 8;
 
+  // ── Star ratings ──
+  const stars = [
+    ['Overall',      getField(d,'Overall Rating','overall_rating')],
+    ['Health Insp.', getField(d,'Health Inspection Rating','health_inspection_rating')],
+    ['Staffing',     getField(d,'Staffing Rating','staffing_rating')],
+    ['Quality Care', getField(d,'QM Rating','qm_rating')]
+  ];
   const boxW = (contentW - 9) / 4;
   stars.forEach(([label, val], i) => {
     const x = margin + i * (boxW + 3);
     const n = parseInt(val) || 0;
     const col = pdfStarColor(n);
-    doc.setFillColor(...col.bg);
-    doc.roundedRect(x, y, boxW, 18, 2, 2, 'F');
-    doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.setTextColor(...col.fg);
-    doc.text(n ? `${n}★` : '—', x + boxW/2, y + 10.5, { align: 'center' });
-    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(90,100,120);
-    doc.text(label, x + boxW/2, y + 15.5, { align: 'center' });
+    doc.setFillColor(...col.bg); doc.roundedRect(x, y, boxW, 18, 2, 2, 'F');
+    doc.setFontSize(15); doc.setFont('helvetica','bold'); doc.setTextColor(...col.fg);
+    doc.text(n ? `${n}★` : '—', x + boxW/2, y + 10.5, { align:'center' });
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(90,100,120);
+    doc.text(label, x + boxW/2, y + 15.5, { align:'center' });
   });
   y += 24;
 
-  // ─ Two-column: Facility Info + Operational ─
+  // ── Two-column: Facility + Operational ──
   const halfW = (contentW - 6) / 2;
-
-  const facilityRows = [
-    ['Ownership',        getField(d,'Ownership Type','ownership_type') || '—'],
-    ['Certified beds',   String(getField(d,'Number of Certified Beds','number_of_certified_beds') || '—')],
-    ['Avg residents/day',String(getField(d,'Average Number of Residents per Day','average_number_of_residents_per_day') || '—')],
-    ['Chain',            getField(d,'Chain Name','chain_name') || 'Independent'],
+  const facRows = [
+    ['Ownership',         getField(d,'Ownership Type','ownership_type') || '—'],
+    ['Certified beds',    String(getField(d,'Number of Certified Beds','number_of_certified_beds') || '—')],
+    ['Avg residents/day', String(getField(d,'Average Number of Residents per Day','average_number_of_residents_per_day') || '—')],
+    ['Chain',             getField(d,'Chain Name','chain_name') || 'Independent'],
   ];
-
   const opsRows = [
     ['EMR',              document.getElementById('emr').value || '—'],
     ['Census capacity',  document.getElementById('census-cap').value || '—'],
@@ -1014,152 +802,104 @@ async function downloadPDF() {
   ];
 
   let yL = y, yR = y;
-
-  // Left col header
-  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(11,31,58);
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(11,31,58);
   doc.text('FACILITY INFO', margin, yL); yL += 2;
   doc.setDrawColor(220,224,232); doc.line(margin, yL, margin + halfW, yL); yL += 4;
-  facilityRows.forEach(([k, v]) => {
-    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(90,100,120);
-    doc.text(k, margin, yL);
-    doc.setFont('helvetica','bold'); doc.setTextColor(44,51,68);
-    doc.text(v, margin + halfW, yL, { align: 'right', maxWidth: halfW - 2 });
+  facRows.forEach(([k,v]) => {
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(90,100,120); doc.text(k, margin, yL);
+    doc.setFont('helvetica','bold'); doc.setTextColor(44,51,68); doc.text(v, margin + halfW, yL, { align:'right', maxWidth: halfW - 2 });
     yL += 6;
   });
 
-  // Right col header
   doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(11,31,58);
   doc.text('OPERATIONAL DETAILS', margin + halfW + 6, yR); yR += 2;
   doc.setDrawColor(220,224,232); doc.line(margin + halfW + 6, yR, pageW - margin, yR); yR += 4;
-  opsRows.forEach(([k, v]) => {
-    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(90,100,120);
-    doc.text(k, margin + halfW + 6, yR);
-    doc.setFont('helvetica','bold'); doc.setTextColor(44,51,68);
-    doc.text(v, pageW - margin, yR, { align: 'right', maxWidth: halfW - 2 });
+  opsRows.forEach(([k,v]) => {
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(90,100,120); doc.text(k, margin + halfW + 6, yR);
+    doc.setFont('helvetica','bold'); doc.setTextColor(44,51,68); doc.text(v, pageW - margin, yR, { align:'right', maxWidth: halfW - 2 });
     yR += 6;
   });
-
   y = Math.max(yL, yR) + 4;
 
-  // ─ Medelite History ─
+  // ── Medelite History ──
   doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(11,31,58);
   doc.text('MEDELITE HISTORY', margin, y); y += 2;
   doc.setDrawColor(220,224,232); doc.line(margin, y, pageW - margin, y); y += 4;
-
   [
     ['Previous Medelite coverage', document.getElementById('prev-coverage').value || '—'],
     ['Prior provider performance',  document.getElementById('prev-perf').value || '—'],
-  ].forEach(([k, v]) => {
-    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(90,100,120);
-    doc.text(k, margin, y);
-    doc.setFont('helvetica','bold'); doc.setTextColor(44,51,68);
-    doc.text(v, pageW - margin, y, { align: 'right' });
+  ].forEach(([k,v]) => {
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(90,100,120); doc.text(k, margin, y);
+    doc.setFont('helvetica','bold'); doc.setTextColor(44,51,68); doc.text(v, pageW - margin, y, { align:'right' });
     y += 6;
   });
   y += 3;
 
-  // ─ Quality Measure Tables ─
-  const ssHosp = findClaimsMeasure('521');
-  const ssEd   = findClaimsMeasure('522');
-  const lsHosp = findClaimsMeasure('551');
-  const lsEd   = findClaimsMeasure('552');
-
+  // ── QM Tables ──
   const tStyle = {
-    theme: 'plain',
-    styles: { fontSize: 8.5, cellPadding: 3 },
-    headStyles: { fillColor: [11,31,58], textColor: [255,255,255], fontStyle: 'bold', fontSize: 7.5 },
-    alternateRowStyles: { fillColor: [247,248,250] },
+    theme:'plain',
+    styles:{ fontSize:8.5, cellPadding:3 },
+    headStyles:{ fillColor:[11,31,58], textColor:[255,255,255], fontStyle:'bold', fontSize:7.5 },
+    alternateRowStyles:{ fillColor:[247,248,250] },
     tableWidth: contentW,
-    margin: { left: margin }
+    margin:{ left: margin }
   };
 
-  y = pdfQMTable(doc, y, margin, contentW, pageH,
-    'SHORT-STAY: REHOSPITALIZATION RATE',
-    buildPdfRows(ssHosp, pct, true, 'ssHosp'), tStyle);
+  const qmSections = [
+    ['SHORT-STAY: REHOSPITALIZATION RATE',               findClaimsMeasure('521'), pct,   'ssHosp'],
+    ['SHORT-STAY: ED VISIT RATE',                        findClaimsMeasure('522'), pct,   'ssEd'],
+    ['LONG-STAY: HOSPITALIZATIONS PER 1,000 RESIDENT DAYS', findClaimsMeasure('551'), per1k, 'lsHosp'],
+    ['LONG-STAY: ED VISITS PER 1,000 RESIDENT DAYS',    findClaimsMeasure('552'), per1k, 'lsEd'],
+  ];
 
-  y = pdfQMTable(doc, y, margin, contentW, pageH,
-    'SHORT-STAY: ED VISIT RATE',
-    buildPdfRows(ssEd, pct, true, 'ssEd'), tStyle);
+  qmSections.forEach(([title, measure, fmtFn, avgKey]) => {
+    if (y > 230) { doc.addPage(); y = 20; }
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(11,31,58);
+    doc.text(title, margin, y + 4);
+    doc.setDrawColor(220,224,232); doc.line(margin, y + 5.5, margin + contentW, y + 5.5);
+    y += 8;
 
-  y = pdfQMTable(doc, y, margin, contentW, pageH,
-    'LONG-STAY: HOSPITALIZATIONS PER 1,000 RESIDENT DAYS',
-    buildPdfRows(lsHosp, per1k, true, 'lsHosp'), tStyle);
+    if (!measure) {
+      doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(154,163,178);
+      doc.text('No data available for this facility.', margin, y + 5);
+      y += 12; return;
+    }
 
-  y = pdfQMTable(doc, y, margin, contentW, pageH,
-    'LONG-STAY: ED VISITS PER 1,000 RESIDENT DAYS',
-    buildPdfRows(lsEd, per1k, true, 'lsEd'), tStyle);
+    const adjVal = parseFloat(getField(measure,'Adjusted Score','adjusted_score') ?? '');
+    const obsVal = parseFloat(getField(measure,'Observed Score','observed_score') ?? '');
+    const natVal = getNationAvg(AVG_FIELDS[avgKey]);
+    const staVal = getStateAvg(AVG_FIELDS[avgKey]);
 
-  // ─ Footer ─
+    const rows = [];
+    if (!isNaN(adjVal)) rows.push(['This facility (risk-adjusted)', fmtFn(adjVal)]);
+    if (!isNaN(obsVal) && obsVal !== adjVal) rows.push(['This facility (observed)', fmtFn(obsVal)]);
+    if (natVal !== null) rows.push(['National average', fmtFn(natVal)]);
+    if (staVal !== null && Math.abs(staVal - (natVal || 0)) > 0.001) rows.push(['State average', fmtFn(staVal)]);
+
+    doc.autoTable({
+      startY: y, head:[['Measure','Value']], body: rows.length ? rows : [['No data','—']],
+      ...tStyle,
+      columnStyles:{ 0:{cellWidth:contentW*0.72}, 1:{cellWidth:contentW*0.28, halign:'right', fontStyle:'bold'} }
+    });
+    y = doc.lastAutoTable.finalY + 6;
+  });
+
+  // ── Footer ──
   const footY = pageH - 14;
-  doc.setFillColor(247,248,250);
-  doc.rect(0, footY, pageW, 14, 'F');
+  doc.setFillColor(247,248,250); doc.rect(0, footY, pageW, 14, 'F');
   doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(154,163,178);
-  doc.text('Medelite Facility Assessment Report · Data sourced from CMS Provider Data Catalog', margin, footY + 5);
+  doc.text('INFINITE — Managed by MEDELITE · Facility Assessment Report · Data: CMS Provider Data Catalog', margin, footY + 5);
   doc.setTextColor(0,145,104);
   doc.text(medicareUrl, margin, footY + 10.5);
   doc.link(margin, footY + 7, 130, 5, { url: medicareUrl });
   doc.setTextColor(154,163,178);
-  doc.text(`Generated ${today}`, pageW - margin, footY + 10.5, { align: 'right' });
+  doc.text(`Generated ${today}`, pageW - margin, footY + 10.5, { align:'right' });
 
-  doc.save(`Medelite_${displayName.replace(/[^a-zA-Z0-9]/g,'_').substring(0,30)}_${ccn}.pdf`);
-}
-
-// Build table rows for PDF with national + state benchmarks
-function buildPdfRows(measure, fmtFn, lowerIsBetter, avgKey) {
-  if (!measure) return null;
-
-  const adjVal = parseFloat(getField(measure, 'Adjusted Score', 'adjusted_score') ?? '');
-  const obsVal = parseFloat(getField(measure, 'Observed Score', 'observed_score') ?? '');
-  const nationVal = getNationAvg(AVG_FIELDS[avgKey].nation);
-  const stateVal  = getStateAvg(AVG_FIELDS[avgKey].state);
-
-  const rows = [];
-  if (!isNaN(adjVal)) rows.push(['This facility (risk-adjusted)', fmtFn(adjVal)]);
-  if (!isNaN(obsVal) && obsVal !== adjVal) rows.push(['This facility (observed)', fmtFn(obsVal)]);
-  if (nationVal !== null) rows.push(['National average', fmtFn(nationVal)]);
-  if (stateVal !== null && Math.abs(stateVal - (nationVal || 0)) > 0.001) rows.push(['State average', fmtFn(stateVal)]);
-
-  return rows.length ? rows : null;
-}
-
-function pdfQMTable(doc, y, margin, contentW, pageH, title, rows, tStyle) {
-  if (y > 230) { doc.addPage(); y = 20; }
-
-  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(11,31,58);
-  doc.text(title, margin, y + 4);
-  doc.setDrawColor(220,224,232);
-  doc.line(margin, y + 5.5, margin + contentW, y + 5.5);
-  y += 8;
-
-  if (!rows) {
-    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(154,163,178);
-    doc.text('No data available for this facility.', margin, y + 5);
-    return y + 12;
-  }
-
-  doc.autoTable({
-    startY: y,
-    head: [['Measure', 'Value']],
-    body: rows,
-    ...tStyle,
-    columnStyles: {
-      0: { cellWidth: contentW * 0.72 },
-      1: { cellWidth: contentW * 0.28, halign: 'right', fontStyle: 'bold' }
-    },
-  });
-
-  return doc.lastAutoTable.finalY + 6;
+  doc.save(`INFINITE_FacilityAssessment_${ccn}_${state}.pdf`);
 }
 
 function pdfStarColor(n) {
-  const map = {
-    1: { bg: [253,234,234], fg: [214,59,59] },
-    2: { bg: [254,244,232], fg: [180,122,23] },
-    3: { bg: [253,246,232], fg: [160,122,36] },
-    4: { bg: [235,247,239], fg: [59,150,90]  },
-    5: { bg: [230,247,243], fg: [0,145,104]  },
-  };
-  return map[n] || { bg: [238,240,244], fg: [90,100,120] };
+  return ({1:{bg:[253,234,234],fg:[214,59,59]},2:{bg:[254,244,232],fg:[180,122,23]},3:{bg:[253,246,232],fg:[160,122,36]},4:{bg:[235,247,239],fg:[59,150,90]},5:{bg:[230,247,243],fg:[0,145,104]}})[n] || {bg:[238,240,244],fg:[90,100,120]};
 }
 </script>
 </body>
