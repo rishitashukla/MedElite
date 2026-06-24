@@ -488,18 +488,9 @@ async function cmsQuery(resource, conditions, limit = 100) {
   });
   p.append('limit', limit);
   const url = `https://data.cms.gov/provider-data/api/1/datastore/query/${resource}/0?${p.toString()}`;
-  const proxies = [
-    `https://corsproxy.io/?${encodeURIComponent(url)}`,
-    `https://proxy.cors.sh/${url}`,
-    `https://thingproxy.freeboard.io/fetch/${url}`
-  ];
-  for (const proxied of proxies) {
-    try {
-      const r = await fetch(proxied, { headers: { 'x-cors-api-key': 'temp_demo' } });
-      if (r.ok) return r.json();
-    } catch(e) { continue; }
-  }
-  throw new Error('All proxies failed. Try again shortly.');
+  const r = await fetch(url);
+  if (r.ok) return r.json();
+  throw new Error(`CMS ${r.status}`);
 }
 
 // ─── Lookup ───────────────────────────────────────────────────────────────────
@@ -517,7 +508,7 @@ async function lookupCCN() {
   document.getElementById('name-override-wrap').style.display = 'none';
 
   try {
-    const provJson = await cmsQuery(PROV_RESOURCE, [{ property: 'CMS Certification Number (CCN)', value: ccn }], 1);
+    const provJson = await cmsQuery(PROV_RESOURCE, [{ property: 'cms_certification_number_ccn', value: ccn }], 1);
     if (!provJson.results || provJson.results.length === 0)
       throw new Error(`No facility found for CCN ${ccn}. Verify the number and try again.`);
     facilityData = provJson.results[0];
@@ -526,15 +517,15 @@ async function lookupCCN() {
 
     showStatus('loading', 'Fetching quality measures…');
     try {
-      const cj = await cmsQuery(CLAIMS_RESOURCE, [{ property: 'CMS Certification Number (CCN)', value: ccn }], 50);
+      const cj = await cmsQuery(CLAIMS_RESOURCE, [{ property: 'cms_certification_number_ccn', value: ccn }], 50);
       claimsData = cj.results || [];
     } catch(e) { claimsData = []; }
 
     showStatus('loading', 'Fetching state & national benchmarks…');
     try {
       const [sj, nj] = await Promise.all([
-        cmsQuery(STATE_AVG_RESOURCE, [{ property: 'State or Nation', value: state }], 1),
-        cmsQuery(STATE_AVG_RESOURCE, [{ property: 'State or Nation', value: 'NATION' }], 1),
+        cmsQuery(STATE_AVG_RESOURCE, [{ property: 'state_or_nation', value: state }], 1),
+        cmsQuery(STATE_AVG_RESOURCE, [{ property: 'state_or_nation', value: 'NATION' }], 1),
       ]);
       stateAvgData = {
         state:  sj.results && sj.results[0]  ? sj.results[0]  : null,
@@ -653,7 +644,7 @@ function updatePreview() {
   const d = facilityData;
   const nameOverride = document.getElementById('name-override').value.trim();
   const displayName  = nameOverride || getFacilityName(d);
-  const ccn   = getField(d, 'CMS Certification Number (CCN)', 'cms_certification_number_ccn') || document.getElementById('ccn-input').value.trim();
+  const ccn   = getField(d, 'cms_certification_number_ccn', 'cms_certification_number_ccn') || document.getElementById('ccn-input').value.trim();
   const state = getField(d, 'State', 'state') || '—';
 
   // Branding — INFINITE stays fixed, only state code is dynamic
@@ -706,7 +697,7 @@ async function downloadPDF() {
   const d = facilityData;
   const nameOverride = document.getElementById('name-override').value.trim();
   const displayName  = nameOverride || getFacilityName(d);
-  const ccn   = getField(d,'CMS Certification Number (CCN)','cms_certification_number_ccn') || document.getElementById('ccn-input').value.trim();
+  const ccn   = getField(d,'cms_certification_number_ccn','cms_certification_number_ccn') || document.getElementById('ccn-input').value.trim();
   const state = getField(d,'State','state') || '';
   const addr  = [getField(d,'Provider Address','provider_address'), getField(d,'City/Town','city_town'), state, getField(d,'ZIP Code','zip_code')].filter(Boolean).join(', ');
   const medicareUrl = `https://www.medicare.gov/care-compare/details/nursing-home/${ccn}`;
