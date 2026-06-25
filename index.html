@@ -516,7 +516,7 @@ async function lookupCCN() {
   document.getElementById('name-override-wrap').style.display = 'none';
 
   try {
-    const provJson = await cmsQuery(PROV_RESOURCE, [{ property: 'CMS Certification Number (CCN)', value: ccn }], 1);
+    const provJson = await cmsQuery(PROV_RESOURCE, [{ property: 'cms_certification_number_ccn', value: ccn }], 1);
     if (!provJson.results || provJson.results.length === 0)
       throw new Error(`No facility found for CCN ${ccn}. Verify the number and try again.`);
     facilityData = provJson.results[0];
@@ -525,15 +525,15 @@ async function lookupCCN() {
 
     showStatus('loading', 'Fetching quality measures…');
     try {
-      const cj = await cmsQuery(CLAIMS_RESOURCE, [{ property: 'CMS Certification Number (CCN)', value: ccn }], 50);
+      const cj = await cmsQuery(CLAIMS_RESOURCE, [{ property: 'cms_certification_number_ccn', value: ccn }], 50);
       claimsData = cj.results || [];
     } catch(e) { claimsData = []; }
 
     showStatus('loading', 'Fetching state & national benchmarks…');
     try {
       const [sj, nj] = await Promise.all([
-        cmsQuery(STATE_AVG_RESOURCE, [{ property: 'State or Nation', value: state }], 1),
-        cmsQuery(STATE_AVG_RESOURCE, [{ property: 'State or Nation', value: 'NATION' }], 1),
+        cmsQuery(STATE_AVG_RESOURCE, [{ property: 'state_or_nation', value: state }], 1),
+        cmsQuery(STATE_AVG_RESOURCE, [{ property: 'state_or_nation', value: 'NATION' }], 1),
       ]);
       stateAvgData = {
         state:  sj.results && sj.results[0]  ? sj.results[0]  : null,
