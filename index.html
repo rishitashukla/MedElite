@@ -488,9 +488,9 @@ async function cmsQuery(resource, conditions, limit = 100) {
   });
   p.append('limit', limit);
   const url = `https://data.cms.gov/provider-data/api/1/datastore/query/${resource}/0?${p.toString()}`;
-  const r = await fetch(url);
-  if (r.ok) return r.json();
-  throw new Error(`CMS ${r.status}`);
+  const r = await fetch(`https://tiny-heart-5d61.rishitashukla.workers.dev/?url=${encodeURIComponent(url)}`);
+  if (!r.ok) throw new Error(`CMS ${r.status}`);
+  return r.json();
 }
 
 // ─── Lookup ───────────────────────────────────────────────────────────────────
