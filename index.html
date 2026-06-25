@@ -694,150 +694,100 @@ function setStarEl(id, val) {
 document.getElementById('ccn-input').addEventListener('keydown', e => { if (e.key === 'Enter') lookupCCN(); });
 document.getElementById('name-override').addEventListener('input', updatePreview);
 
-// ─── PDF ─────────────────────────────────────────────────────────────────────
 async function downloadPDF() {
   if (!facilityData) return;
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
 
   const d = facilityData;
-  const nameOverride = document.getElementById('name-override').value.trim();
+  const nameOverride = document.getElementById("name-override").value.trim();
   const displayName  = nameOverride || getFacilityName(d);
-  const ccn   = getField(d,'CMS Certification Number (CCN)','cms_certification_number_ccn') || document.getElementById('ccn-input').value.trim();
-  const state = getField(d,'State','state') || '';
-  const addr  = [getField(d,'Provider Address','provider_address'), getField(d,'City/Town','city_town'), state, getField(d,'ZIP Code','zip_code')].filter(Boolean).join(', ');
-  const medicareUrl = `https://www.medicare.gov/care-compare/details/nursing-home/${ccn}`;
-  const today = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const ccn   = getField(d,"CMS Certification Number (CCN)","cms_certification_number_ccn") || document.getElementById("ccn-input").value.trim();
+  const state = getField(d,"State","state") || "";
+  const addr  = [getField(d,"Provider Address","provider_address"), getField(d,"City/Town","city_town"), state, getField(d,"ZIP Code","zip_code")].filter(Boolean).join(", ");
+  const medicareUrl = "https://www.medicare.gov/care-compare/details/nursing-home/" + ccn;
+  const today = new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
 
   const pageW = 215.9, pageH = 279.4, margin = 20;
   const contentW = pageW - margin * 2;
-
-  // ── Centered branding header ──
-  // Draw infinity loop symbol manually using circles (approximation)
   const cx = pageW / 2;
 
-  // Draw teal infinity-style logo mark
-  doc.setFillColor(180, 60, 160); // magenta-purple like reference
-  doc.circle(cx - 7, 18, 7, 'F');
-  doc.circle(cx + 7, 18, 7, 'F');
-  // White cutout center
-  doc.setFillColor(255,255,255);
-  doc.circle(cx - 7, 18, 4, 'F');
-  doc.circle(cx + 7, 18, 4, 'F');
-  doc.rect(cx - 3, 14, 6, 8, 'F');
+  doc.setFontSize(22); doc.setFont("helvetica","bold"); doc.setTextColor(11,31,58);
+  doc.text("INFINITE", cx, 20, { align:"center" });
+  doc.setFontSize(9); doc.setFont("helvetica","normal"); doc.setTextColor(100,100,100);
+  doc.text("Managed by MEDELITE", cx, 27, { align:"center" });
+  doc.setFontSize(11); doc.setFont("helvetica","bold"); doc.setTextColor(11,31,58);
+  doc.text("FACILITY ASSESSMENT SNAPSHOT", cx, 35, { align:"center" });
+  doc.text(state, cx, 41, { align:"center" });
 
-  let y = 30;
+  let y = 47;
 
-  // INFINITE text centered
-  doc.setFontSize(22); doc.setFont('helvetica','bold'); doc.setTextColor(11,31,58);
-  doc.text('INFINITE', cx, y, { align:'center' });
-  y += 6;
-
-  // Managed by MEDELITE
-  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(100,100,100);
-  doc.text('Managed by ', cx - 18, y, { align:'center' });
-  doc.setFont('helvetica','bold'); doc.setTextColor(0,120,200);
-  doc.text('MED', cx - 5, y);
-  doc.setTextColor(11,31,58);
-  doc.text('ELITE', cx + 5, y);
-  y += 8;
-
-  // FACILITY ASSESSMENT SNAPSHOT centered
-  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(11,31,58);
-  doc.text('FACILITY ASSESSMENT SNAPSHOT', cx, y, { align:'center' });
-  y += 6;
-
-  // State code centered
-  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(11,31,58);
-  doc.text(state, cx, y, { align:'center' });
-  y += 8;
-
-  // ── Single reference-style table ──
-  // Pull quality measure values
-  const ssHosp = findClaimsMeasure('521');
-  const ssEd   = findClaimsMeasure('522');
-  const lsHosp = findClaimsMeasure('551');
-  const lsEd   = findClaimsMeasure('552');
+  const ssHosp = findClaimsMeasure("521");
+  const ssEd   = findClaimsMeasure("522");
+  const lsHosp = findClaimsMeasure("551");
+  const lsEd   = findClaimsMeasure("552");
 
   const getFacVal = (m) => {
-    if (!m) return '—';
-    const v = parseFloat(getField(m,'Adjusted Score','adjusted_score') ?? getField(m,'Observed Score','observed_score') ?? '');
-    return isNaN(v) ? '—' : v;
+    if (!m) return "—";
+    const v = parseFloat(getField(m,"Adjusted Score","adjusted_score") || getField(m,"Observed Score","observed_score") || "");
+    return isNaN(v) ? "—" : v;
   };
 
-  const ssHospVal  = getFacVal(ssHosp);
-  const ssEdVal    = getFacVal(ssEd);
-  const lsHospVal  = getFacVal(lsHosp);
-  const lsEdVal    = getFacVal(lsEd);
-
-  const natSSHosp  = getNationAvg(AVG_FIELDS.ssHosp);
-  const staSSHosp  = getStateAvg(AVG_FIELDS.ssHosp);
-  const natSSEd    = getNationAvg(AVG_FIELDS.ssEd);
-  const staSSEd    = getStateAvg(AVG_FIELDS.ssEd);
-  const natLSHosp  = getNationAvg(AVG_FIELDS.lsHosp);
-  const staLSHosp  = getStateAvg(AVG_FIELDS.lsHosp);
-  const natLSEd    = getNationAvg(AVG_FIELDS.lsEd);
-  const staLSEd    = getStateAvg(AVG_FIELDS.lsEd);
-
-  const fPct  = v => v === '—' || isNaN(v) ? '—' : parseFloat(v).toFixed(1) + '%';
-  const f1k   = v => v === '—' || isNaN(v) ? '—' : parseFloat(v).toFixed(2);
-  const fNav  = v => v === null ? '—' : v.toFixed(1) + '%';
-  const fNav1k= v => v === null ? '—' : v.toFixed(2);
+  const fPct  = v => (v === "—" || isNaN(v)) ? "—" : parseFloat(v).toFixed(1) + "%";
+  const f1k   = v => (v === "—" || isNaN(v)) ? "—" : parseFloat(v).toFixed(2);
+  const fN    = v => v === null ? "—" : parseFloat(v).toFixed(1) + "%";
+  const fN1k  = v => v === null ? "—" : parseFloat(v).toFixed(2);
 
   const tableRows = [
-    ['Name of Facility',                            displayName],
-    ['Location',                                    addr],
-    ['EMR',                                         document.getElementById('emr').value || '—'],
-    ['Census Capacity',                             document.getElementById('census-cap').value || '—'],
-    ['Current Census',                              document.getElementById('census-cur').value || '—'],
-    ['Type of Patient',                             document.getElementById('patient-type').value || '—'],
-    ['Previous Coverage from Medelite',             document.getElementById('prev-coverage').value || '—'],
-    ['Previous Provider Performance from Medelite', document.getElementById('prev-perf').value || '—'],
-    ['Medical Coverage',                            document.getElementById('medical-coverage').value || '—'],
-    ['Overall Star Rating',                         String(getField(d,'Overall Rating','overall_rating') || '—')],
-    ['Health Inspection',                           String(getField(d,'Health Inspection Rating','health_inspection_rating') || '—')],
-    ['Staffing',                                    String(getField(d,'Staffing Rating','staffing_rating') || '—')],
-    ['Quality of Resident Care',                    String(getField(d,'QM Rating','qm_rating') || '—')],
-    ['Short Term Hospitalization',                  fPct(ssHospVal)],
-    ['STR National Avg. for Hospitalization',       fNav(natSSHosp)],
-    ['STR State National Avg. for Hospitalization', fNav(staSSHosp)],
-    ['STR ED Visit',                                fPct(ssEdVal)],
-    ['STR ED Visits National Avg.',                 fNav(natSSEd)],
-    ['STR ED Visits State Avg.',                    fNav(staSSEd)],
-    ['LT Hospitalization',                          f1k(lsHospVal)],
-    ['LT National Avg. for Hospitalization',        fNav1k(natLSHosp)],
-    ['LT State National Avg. for Hospitalization',  fNav1k(staLSHosp)],
-    ['ED Visit',                                    f1k(lsEdVal)],
-    ['LT ED Visits National Avg.',                  fNav1k(natLSEd)],
-    ['LT ED Visits State Avg.',                     fNav1k(staLSEd)],
+    ["Name of Facility",                            displayName],
+    ["Location",                                    addr],
+    ["EMR",                                         document.getElementById("emr").value || "—"],
+    ["Census Capacity",                             document.getElementById("census-cap").value || "—"],
+    ["Current Census",                              document.getElementById("census-cur").value || "—"],
+    ["Type of Patient",                             document.getElementById("patient-type").value || "—"],
+    ["Previous Coverage from Medelite",             document.getElementById("prev-coverage").value || "—"],
+    ["Previous Provider Performance from Medelite", document.getElementById("prev-perf").value || "—"],
+    ["Medical Coverage",                            document.getElementById("medical-coverage").value || "—"],
+    ["Overall Star Rating",                         String(getField(d,"Overall Rating","overall_rating") || "—")],
+    ["Health Inspection",                           String(getField(d,"Health Inspection Rating","health_inspection_rating") || "—")],
+    ["Staffing",                                    String(getField(d,"Staffing Rating","staffing_rating") || "—")],
+    ["Quality of Resident Care",                    String(getField(d,"QM Rating","qm_rating") || "—")],
+    ["Short Term Hospitalization",                  fPct(getFacVal(ssHosp))],
+    ["STR National Avg. for Hospitalization",       fN(getNationAvg(AVG_FIELDS.ssHosp))],
+    ["STR State National Avg. for Hospitalization", fN(getStateAvg(AVG_FIELDS.ssHosp))],
+    ["STR ED Visit",                                fPct(getFacVal(ssEd))],
+    ["STR ED Visits National Avg.",                 fN(getNationAvg(AVG_FIELDS.ssEd))],
+    ["STR ED Visits State Avg.",                    fN(getStateAvg(AVG_FIELDS.ssEd))],
+    ["LT Hospitalization",                          f1k(getFacVal(lsHosp))],
+    ["LT National Avg. for Hospitalization",        fN1k(getNationAvg(AVG_FIELDS.lsHosp))],
+    ["LT State National Avg. for Hospitalization",  fN1k(getStateAvg(AVG_FIELDS.lsHosp))],
+    ["ED Visit",                                    f1k(getFacVal(lsEd))],
+    ["LT ED Visits National Avg.",                  fN1k(getNationAvg(AVG_FIELDS.lsEd))],
+    ["LT ED Visits State Avg.",                     fN1k(getStateAvg(AVG_FIELDS.lsEd))],
   ];
 
   doc.autoTable({
     startY: y,
-    head: [],
     body: tableRows,
-    theme: 'grid',
+    theme: "grid",
     styles: { fontSize: 9, cellPadding: 3.5, textColor: [30,30,30], lineColor: [180,180,180], lineWidth: 0.3 },
     columnStyles: {
-      0: { cellWidth: contentW * 0.58, fontStyle: 'bold', fillColor: [245,245,245] },
-      1: { cellWidth: contentW * 0.42, fontStyle: 'normal', halign: 'left', fillColor: [255,255,255], textColor: [80,80,80], fontStyle: 'italic' }
+      0: { cellWidth: contentW * 0.6, fontStyle: "bold", fillColor: [245,245,245] },
+      1: { cellWidth: contentW * 0.4, fontStyle: "italic", fillColor: [255,255,255], textColor: [80,80,80] }
     },
     tableWidth: contentW,
     margin: { left: margin },
   });
 
   y = doc.lastAutoTable.finalY + 8;
-
-  // ── Medicare source link ──
-  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(0,120,200);
+  doc.setFontSize(8); doc.setFont("helvetica","normal"); doc.setTextColor(0,120,200);
   doc.text(medicareUrl, margin, y);
   doc.link(margin, y - 4, contentW, 6, { url: medicareUrl });
   y += 5;
-
   doc.setFontSize(7); doc.setTextColor(150,150,150);
-  doc.text(`Data sourced from CMS Provider Data Catalog · Generated ${today}`, margin, y);
+  doc.text("Data sourced from CMS Provider Data Catalog · Generated " + today, margin, y);
 
-  doc.save(`INFINITE_FacilityAssessment_${ccn}_${state}.pdf`);
+  doc.save("INFINITE_FacilityAssessment_" + ccn + "_" + state + ".pdf");
 }
 
 function pdfStarColor(n) {
