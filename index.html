@@ -899,8 +899,7 @@ async function downloadDOCX() {
     ['LT ED Visits State Avg.',                     fN1k(getStateAvg(AVG_FIELDS.lsEd))],
   ];
 
-  const docxLib = window.docx || window.DocxJS || {};
-  const { Document, Paragraph, Table, TableRow, TableCell, TextRun, WidthType, AlignmentType, Packer } = docxLib;
+  const { Document, Paragraph, Table, TableRow, TableCell, TextRun, WidthType, AlignmentType, Packer } = window.docx;
 
   const makeRow = ([label, value], shade) => new TableRow({
     children: [
