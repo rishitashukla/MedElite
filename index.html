@@ -484,23 +484,18 @@ const CLAIMS_RESOURCE    = 'tbry-pc3d';
 const STATE_AVG_RESOURCE = 'wse2-w6yg';
 
 async function cmsQuery(resource, conditions, limit = 100) {
-  const params = conditions.map((c, i) =>
-    `conditions%5B${i}%5D%5Bproperty%5D=${encodeURIComponent(c.property)}` +
-    `&conditions%5B${i}%5D%5Bvalue%5D=${encodeURIComponent(c.value)}` +
-    `&conditions%5B${i}%5D%5Boperator%5D=%3D`
-  ).join('&');
-  const url = `https://data.cms.gov/provider-data/api/1/datastore/query/${resource}/0?${params}&limit=${limit}`;
-
-  // Try direct first (works locally), fall back to corsproxy (needed on GitHub Pages)
-  try {
-    const r = await fetch(url);
-    if (r.ok) return r.json();
-  } catch(e) {}
-
-  const proxied = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-  const r2 = await fetch(proxied);
-  if (!r2.ok) throw new Error(`CMS ${r2.status}`);
-  return r2.json();
+  const WORKER = 'https://tiny-heart-5d61.rishitashukla.workers.dev';
+  const p = new URLSearchParams();
+  conditions.forEach((c, i) => {
+    p.append(`conditions[${i}][property]`, c.property);
+    p.append(`conditions[${i}][value]`, c.value);
+    p.append(`conditions[${i}][operator]`, '=');
+  });
+  p.append('limit', limit);
+  const url = `https://data.cms.gov/provider-data/api/1/datastore/query/${resource}/0?${p.toString()}`;
+  const r = await fetch(`${WORKER}?url=${encodeURIComponent(url)}`);
+  if (!r.ok) throw new Error(`CMS ${r.status}`);
+  return r.json();
 }
 
 // ─── Lookup ───────────────────────────────────────────────────────────────────
@@ -519,7 +514,7 @@ async function lookupCCN() {
   document.getElementById('name-override-wrap').style.display = 'none';
 
   try {
-    const provJson = await cmsQuery(PROV_RESOURCE, [{ property: 'CMS Certification Number (CCN)', value: ccn }], 1);
+    const provJson = await cmsQuery(PROV_RESOURCE, [{ property: 'cms_certification_number_ccn', value: ccn }], 1);
     if (!provJson.results || provJson.results.length === 0)
       throw new Error(`No facility found for CCN ${ccn}. Verify the number and try again.`);
     facilityData = provJson.results[0];
@@ -528,15 +523,15 @@ async function lookupCCN() {
 
     showStatus('loading', 'Fetching quality measures…');
     try {
-      const cj = await cmsQuery(CLAIMS_RESOURCE, [{ property: 'CMS Certification Number (CCN)', value: ccn }], 50);
+      const cj = await cmsQuery(CLAIMS_RESOURCE, [{ property: 'cms_certification_number_ccn', value: ccn }], 50);
       claimsData = cj.results || [];
     } catch(e) { claimsData = []; }
 
     showStatus('loading', 'Fetching state & national benchmarks…');
     try {
       const [sj, nj] = await Promise.all([
-        cmsQuery(STATE_AVG_RESOURCE, [{ property: 'State or Nation', value: state }], 1),
-        cmsQuery(STATE_AVG_RESOURCE, [{ property: 'State or Nation', value: 'NATION' }], 1),
+        cmsQuery(STATE_AVG_RESOURCE, [{ property: 'state_or_nation', value: state }], 1),
+        cmsQuery(STATE_AVG_RESOURCE, [{ property: 'state_or_nation', value: 'NATION' }], 1),
       ]);
       stateAvgData = {
         state:  sj.results && sj.results[0]  ? sj.results[0]  : null,
