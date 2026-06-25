@@ -480,6 +480,7 @@ const CLAIMS_RESOURCE    = 'tbry-pc3d';
 const STATE_AVG_RESOURCE = 'wse2-w6yg';
 
 async function cmsQuery(resource, conditions, limit = 100) {
+  const WORKER = 'https://tiny-heart-5d61.rishitashukla.workers.dev';
   const params = conditions.map((c, i) =>
     `conditions%5B${i}%5D%5Bproperty%5D=${encodeURIComponent(c.property)}` +
     `&conditions%5B${i}%5D%5Bvalue%5D=${encodeURIComponent(c.value)}` +
@@ -489,8 +490,9 @@ async function cmsQuery(resource, conditions, limit = 100) {
 
   // Try direct first (works locally), fall back to corsproxy (needed on GitHub Pages)
   try {
-    const r = await fetch(url);
-    if (r.ok) return r.json();
+    const r = await fetch(`${WORKER}?url=${encodeURIComponent(url)}`);
+  if (!r.ok) throw new Error(`CMS ${r.status}`);
+  return r.json();
   } catch(e) {}
 
   const proxied = `https://corsproxy.io/?${encodeURIComponent(url)}`;
